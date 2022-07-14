@@ -28,8 +28,10 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_swagger',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,9 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dj_rest_auth.registration',
     'dj_rest_auth',
+    'drf_yasg',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
     'neraApp',
 ]
 SITE_ID = 1
@@ -94,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'nera_pro.urls'
@@ -183,3 +189,4 @@ CORS_ORIGIN_WHITELIST = (
     'http://frontend:3000',
     'http://0.0.0.0:3000',
 )
+CORS_ORIGIN_ALLOW_ALL = True
