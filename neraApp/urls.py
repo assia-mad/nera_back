@@ -18,11 +18,17 @@ schema_view = get_schema_view(
       license=openapi.License(name="BSD License"),
 
    ),
-
    public=True,
    permission_classes=[permissions.AllowAny],
-
 )
+router = routers.DefaultRouter()
+router.register('products', ProductView , basename='products')
+router.register('types', ProductTypeView , basename='product_type')
+router.register('categories', CategorieView , basename='categories')
+router.register('sub_categories', SubCategorieView , basename='product_sub_categorie')
+router.register('colors', ColorView , basename='product_colors')
+router.register('sizes', SizeView, basename='product_sizes')
+router.register('images', ProductImageView, basename='product_images')
 
 urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
@@ -43,3 +49,4 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
 ]
+urlpatterns += router.urls
