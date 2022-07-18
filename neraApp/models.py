@@ -1,3 +1,5 @@
+from enum import Flag
+from pickle import FROZENSET
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
@@ -7,6 +9,11 @@ num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 role_choices = [ 
     ('Admin','Admin'),
     ('Client','Client'),
+]
+order_states = [
+    ('non_traitée','non_traitée'),
+    ('Traitée','Traitée'),
+    ('annulée','annulée'),
 ]
 
 class User(AbstractUser):
@@ -40,12 +47,13 @@ class Size(models.Model):
     code = models.CharField(max_length=10)
     def __str__(self):
         return self.code
-
+#produit
 class Product(models.Model):
+    owner = models.ForeignKey(User , related_name='product_owner', on_delete=models.CASCADE)
     code = models.CharField(max_length=30 , blank= False , null = False )
     name = models.CharField(max_length=100 , blank= False, null= False)
-    regular_price = models.PositiveIntegerField(blank= False , null= False)
-    disc_price = models.PositiveIntegerField(blank= True , null= True) #price after a discount
+    regular_price = models.DecimalField(decimal_places =6,max_digits = 6)
+    disc_per = models.DecimalField(decimal_places =6,max_digits = 6) #price after a discount
     type = models.ForeignKey(ProductType , related_name='product_type', on_delete=models.CASCADE)
     sub_categories = models.ManyToManyField(SubCategorie , related_name='product_sub_categories')
     available_colors = models.ManyToManyField(Color , related_name='product_colours')
@@ -57,11 +65,23 @@ class Product(models.Model):
         return self.name
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE , related_name= 'product_images')
+    product = models.ForeignKey(Product, related_name= 'product_images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to = 'product_images/', blank = False , null= False)
  
     def __str__(self):
         return self.image.url
+#commande
+class Order(models.Model):
+    owner = models.ForeignKey(User , related_name='order_owner',on_delete= models.CASCADE)
+    product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
+    state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
+    color = models.CharField(max_length=7 , blank=False , null = False)
+    size = models.CharField(max_length=10 , blank= False , null = False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-
+class Panier(models.Model):
+    owner = models.ForeignKey(User , related_name='panier_owner',on_delete= models.CASCADE)
+    orders = models.ManyToManyField(Order , related_name='orders')
+    adress = models.CharField(max_length=150 , blank= False , null= False)
+    created_at = models.DateTimeField(auto_now_add=True)
 

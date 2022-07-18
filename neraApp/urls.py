@@ -29,6 +29,8 @@ router.register('sub_categories', SubCategorieView , basename='product_sub_categ
 router.register('colors', ColorView , basename='product_colors')
 router.register('sizes', SizeView, basename='product_sizes')
 router.register('images', ProductImageView, basename='product_images')
+router.register('orders', OrderView , basename='orders')
+router.register('panier', PanierView, basename='panier')
 
 urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer , UserDetailsSerializer
 from .models import *
-from allauth.account.adapter import DefaultAccountAdapter
+
 
 
 
@@ -79,10 +79,26 @@ class ProductSerializer(serializers.ModelSerializer):
         many=True,
         required= True
     )
-    images = serializers.SerializerMethodField()
-
-    def get_images(self, product):
-       return ImageSerializer(product.product_images.all(), many=True).data 
+    images= ImageSerializer(many=True, read_only = True)
+    uploaded_images = serializers.ListField ( child = serializers.FileField(max_length = 1000000, allow_empty_file = False, use_url = False) , write_only = True)
+     
     class Meta:
        model = Product
-       fields = ['id','code','name','regular_price','disc_price','type','sub_categories','available_colors','available_sizes','images']
+       fields = ['id','owner','code','name','regular_price','disc_price','type','sub_categories','available_colors','available_sizes','images','uploaded_images']
+
+    def create(self, validated_data):
+        uploaded_data = validated_data.pop('uploaded_images')
+        new_product = Product.objects.create(**validated_data)
+        for uploaded_item in uploaded_data:
+            new_product_image = ProductImage.objects.create(product = new_product, images = uploaded_item)
+        return new_product
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Order
+        fields = ['id','owner','product','color','size','state']
+
+class PanierSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Panier
+        fields = ['id','owner','orders','address']

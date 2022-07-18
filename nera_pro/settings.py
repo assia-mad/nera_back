@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'dj_rest_auth.registration',
     'dj_rest_auth',
     'drf_yasg',
