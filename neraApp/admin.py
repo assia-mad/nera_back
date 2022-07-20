@@ -19,3 +19,4 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
     pass
+# admin.site.register(Product)

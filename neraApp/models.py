@@ -52,15 +52,15 @@ class Product(models.Model):
     owner = models.ForeignKey(User , related_name='product_owner', on_delete=models.CASCADE)
     code = models.CharField(max_length=30 , blank= False , null = False )
     name = models.CharField(max_length=100 , blank= False, null= False)
-    regular_price = models.DecimalField(decimal_places =6,max_digits = 6)
-    disc_per = models.DecimalField(decimal_places =6,max_digits = 6) #price after a discount
+    regular_price = models.DecimalField(decimal_places =2,max_digits =10 )
+    disc_price = models.DecimalField(decimal_places =2,max_digits = 10 , blank=True , null= True ) #  price after a discount
+    disc_per= models.DecimalField(decimal_places =2,max_digits = 5,  default= 0.00)
     type = models.ForeignKey(ProductType , related_name='product_type', on_delete=models.CASCADE)
     sub_categories = models.ManyToManyField(SubCategorie , related_name='product_sub_categories')
     available_colors = models.ManyToManyField(Color , related_name='product_colours')
     available_sizes = models.ManyToManyField(Size , related_name='product_sizes')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
     def __str__(self):
         return self.name
 

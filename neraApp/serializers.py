@@ -1,11 +1,9 @@
-from cgitb import lookup
+from unicodedata import decimal
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer , UserDetailsSerializer
 from .models import *
-
-
-
+import decimal
 
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -79,19 +77,51 @@ class ProductSerializer(serializers.ModelSerializer):
         many=True,
         required= True
     )
-    images= ImageSerializer(many=True, read_only = True)
-    uploaded_images = serializers.ListField ( child = serializers.FileField(max_length = 1000000, allow_empty_file = False, use_url = False) , write_only = True)
+    sub_categories= serializers.PrimaryKeyRelatedField(
+        queryset= SubCategorie.objects.all(),
+        many=True,
+        required= False
+    )
+    images= ImageSerializer(many=True, read_only = True,required = False)
+    uploaded_images = serializers.ListField ( child = serializers.FileField(max_length = 1000000, allow_empty_file =True, use_url = False) , write_only = True )
      
     class Meta:
        model = Product
-       fields = ['id','owner','code','name','regular_price','disc_price','type','sub_categories','available_colors','available_sizes','images','uploaded_images']
+       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes','images','uploaded_images']
 
     def create(self, validated_data):
         uploaded_data = validated_data.pop('uploaded_images')
-        new_product = Product.objects.create(**validated_data)
+        new_product = super().create(validated_data)
+        print(new_product.name)
+        regular_price = new_product.regular_price
+        percentage = decimal.Decimal(new_product.disc_per / 100)
+        new_product.disc_price = regular_price - (regular_price * percentage)
         for uploaded_item in uploaded_data:
             new_product_image = ProductImage.objects.create(product = new_product, images = uploaded_item)
-        return new_product
+        return new_product       
+   
+    
+    def update(self, instance, validated_data):
+        percentage = validated_data.get('disc_per') / 100
+        regular_price = validated_data.get('regular_price')
+        instance.disc_price = regular_price - (regular_price * percentage)
+        instance.name = validated_data.get('name', instance.name)
+        instance.code = validated_data.get('code', instance.code)
+        instance.regular_price = validated_data.get('regular_price', instance.regular_price)
+        instance.disc_per = validated_data.get('disc_per', instance.disc_per)
+        instance.type = validated_data.get('type', instance.type)
+        instance.name = validated_data.get('name', instance.name)
+        sub_categories = validated_data.pop('sub_categories')
+        for sub_cat in sub_categories :
+            instance.sub_categories.add(sub_cat)
+        available_colors= validated_data.pop('available_colors')
+        for color in available_colors :
+            instance.available_colors.add(color)
+        available_sizes = validated_data.pop('available_sizes')
+        for size in available_sizes :
+            instance.available_sizes.add(size)
+        instance.save() 
+        return instance
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta :
