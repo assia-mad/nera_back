@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','is_superuser', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','is_staff', 'is_active']
 
 
 class UpdateUsersByAdminSerializer(serializers.Serializer):
@@ -25,7 +25,9 @@ class UpdateUsersByAdminSerializer(serializers.Serializer):
             recipient_list = [instance.email]
             send_mail(subject, message,from_email,recipient_list , fail_silently=False)
         if validated_data.get('role') == 'Admin' :
-            instance.is_superuser = True
+            instance.is_staff = True
+        if validated_data.get('role') != 'Admin':
+            instance.is_staff= False
         instance.role = validated_data.get('role', instance.role)
             
         if instance.is_active != validated_data.get('is_active'):
@@ -40,6 +42,7 @@ class UpdateUsersByAdminSerializer(serializers.Serializer):
             send_mail(subject, message,from_email,recipient_list , fail_silently=False)
               
         instance.is_active = validated_data.get('is_active', instance.is_active)
+        # instance.logout()
         instance.save()
         return instance 
 
@@ -84,7 +87,7 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
     role = serializers.ChoiceField(choices= role_choices)
     class Meta : 
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','is_superuser', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','is_staff', 'is_active']
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :

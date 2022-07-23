@@ -64,6 +64,7 @@ ACCOUNT_LOGOUT_REDIRECT_URL = '/dj-rest-auth/login/'
 LOGIN_URL = 'http://localhost:8000/nera/login'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 REST_AUTH_PW_RESET_USE_SITES_DOMAIN = True
+OLD_PASSWORD_FIELD_ENABLED = True,
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'

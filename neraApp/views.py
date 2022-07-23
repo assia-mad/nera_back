@@ -18,7 +18,7 @@ class ManageUsersView(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = ManageusersSerializer
-    # permission_classes = [AdminAuthenticationPermission]
+    permission_classes = [IsAuthenticated]
     pagination_class = ManageUsersPagination
     parser_classes = [FormParser, JSONParser, MultiPartParser]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
