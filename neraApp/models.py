@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 
+
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 
 role_choices = [ 
@@ -70,18 +71,25 @@ class ProductImage(models.Model):
  
     def __str__(self):
         return self.image.url
+
+class Panier(models.Model):
+    owner = models.ForeignKey(User , related_name='panier_owner',on_delete= models.CASCADE)
+    address = models.CharField(max_length=150 , blank= False , null= False)
+    tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
+    created_at = models.DateTimeField(auto_now_add=True)
 #commande
 class Order(models.Model):
-    owner = models.ForeignKey(User , related_name='order_owner',on_delete= models.CASCADE)
+    panier = models.ForeignKey(Panier , related_name='panier',on_delete= models.CASCADE , null= True)
     product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
     state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
     color = models.CharField(max_length=7 , blank=False , null = False)
     size = models.CharField(max_length=10 , blank= False , null = False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Panier(models.Model):
-    owner = models.ForeignKey(User , related_name='panier_owner',on_delete= models.CASCADE)
-    orders = models.ManyToManyField(Order , related_name='orders')
-    adress = models.CharField(max_length=150 , blank= False , null= False)
-    created_at = models.DateTimeField(auto_now_add=True)
+class FavoriteList(models.Model):
+    owner = models.OneToOneField(User , related_name='list_owner', on_delete= models.CASCADE)
+    products = models.ManyToManyField(Product , related_name='favorite_products')
+
+
+
 

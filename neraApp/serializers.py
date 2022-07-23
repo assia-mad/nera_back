@@ -1,10 +1,57 @@
 from unicodedata import decimal
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer , UserDetailsSerializer
+from dj_rest_auth.serializers import LoginSerializer , UserDetailsSerializer , PasswordChangeSerializer
 from .models import *
 import decimal
+from django.conf import settings
+from django.core.mail import send_mail
 
+class ManageusersSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = User
+        fields = ['id','first_name','last_name','email','address','tel','image','role','is_superuser', 'is_active']
+
+
+class UpdateUsersByAdminSerializer(serializers.Serializer):
+    role  = serializers.ChoiceField(choices=role_choices , default=role_choices[0])
+    is_active = serializers.BooleanField( default=True)
+
+    def update(self, instance, validated_data):
+        if instance.role != validated_data.get('role') :
+            subject = 'Role changed'
+            message = f'Salut {instance.first_name} {instance.last_name} your role has been changed please logout then login again to get your suitable interface'
+            from_email = settings.EMAIL_HOST_USER 
+            recipient_list = [instance.email]
+            send_mail(subject, message,from_email,recipient_list , fail_silently=False)
+        if validated_data.get('role') == 'Admin' :
+            instance.is_superuser = True
+        instance.role = validated_data.get('role', instance.role)
+            
+        if instance.is_active != validated_data.get('is_active'):
+            if validated_data.get('is_active') == True:
+                account = 'has been activated'
+            else :
+                account = 'has been desactivated'
+            subject = 'Nera Shop account'
+            message = f'Hi {instance.first_name} {instance.last_name} your account {account}'
+            from_email = settings.EMAIL_HOST_USER 
+            recipient_list = [instance.email]
+            send_mail(subject, message,from_email,recipient_list , fail_silently=False)
+              
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.save()
+        return instance 
+
+class FavoritListSerializer(serializers.ModelSerializer):
+    products = serializers.PrimaryKeyRelatedField(
+        queryset= Product.objects.all(),
+        many=True,
+        required=False
+    )
+    class Meta:
+        model = FavoriteList
+        fields = ['id','owner','products']
 
 class CustomRegisterSerializer(RegisterSerializer):
     username = None
@@ -22,6 +69,10 @@ class CustomRegisterSerializer(RegisterSerializer):
         data_dict['address'] = self.validated_data.get('address', '')
         data_dict['tel'] = self.validated_data.get('tel', '')
         return data_dict
+    def save(self, request):
+        user =super().save(request)
+        Favorite = FavoriteList.objects.create(owner = user)
+        return user
 
 class CustomLoginSerializer(LoginSerializer): 
     username = None
@@ -97,7 +148,7 @@ class ProductSerializer(serializers.ModelSerializer):
         percentage = decimal.Decimal(new_product.disc_per / 100)
         new_product.disc_price = regular_price - (regular_price * percentage)
         for uploaded_item in uploaded_data:
-            new_product_image = ProductImage.objects.create(product = new_product, images = uploaded_item)
+            new_product_image = ProductImage.objects.create(product = new_product, image = uploaded_item)
         return new_product       
    
     
@@ -126,9 +177,13 @@ class ProductSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta :
         model = Order
-        fields = ['id','owner','product','color','size','state']
+        fields = ['id','panier','product','color','size','state']
 
 class PanierSerializer(serializers.ModelSerializer):
     class Meta :
         model = Panier
-        fields = ['id','owner','orders','address']
+        fields = ['id','owner','address','tel']
+    
+    
+
+    
