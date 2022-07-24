@@ -6,6 +6,7 @@ from .models import *
 import decimal
 from django.conf import settings
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
@@ -16,7 +17,7 @@ class ManageusersSerializer(serializers.ModelSerializer):
 class UpdateUsersByAdminSerializer(serializers.Serializer):
     role  = serializers.ChoiceField(choices=role_choices , default=role_choices[0])
     is_active = serializers.BooleanField( default=True)
-
+        
     def update(self, instance, validated_data):
         if instance.role != validated_data.get('role') :
             subject = 'Role changed'
@@ -39,12 +40,15 @@ class UpdateUsersByAdminSerializer(serializers.Serializer):
             message = f'Hi {instance.first_name} {instance.last_name} your account {account}'
             from_email = settings.EMAIL_HOST_USER 
             recipient_list = [instance.email]
-            send_mail(subject, message,from_email,recipient_list , fail_silently=False)
-              
+            send_mail(subject, message,from_email,recipient_list , fail_silently=False)      
         instance.is_active = validated_data.get('is_active', instance.is_active)
-        # instance.logout()
+        try:
+            instance.user.auth_token.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass    
         instance.save()
         return instance 
+    
 
 class FavoritListSerializer(serializers.ModelSerializer):
     products = serializers.PrimaryKeyRelatedField(
@@ -92,28 +96,28 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :
         model = ProductType
-        fields = ['id','name']
+        fields = ['id','name','created_at']
         lookup_fields = 'id'
 
 class CategorieSerializer(serializers.ModelSerializer):
     class Meta :
         model = Categorie
-        fields = ['id','name']
+        fields = ['id','name','created_at']
 
 class SubCategorieSerializer(serializers.ModelSerializer):
     class Meta :
         model = SubCategorie
-        fields = ['id','name','categorie']
+        fields = ['id','name','categorie','created_at']
 
 class ColorSerializer(serializers.ModelSerializer):
     class Meta :
         model = Color
-        fields = ['id','code']
+        fields = ['id','code','created_at']
 
 class SizeSerializer(serializers.ModelSerializer):
     class Meta :
         model = Size
-        fields = ['id','code']
+        fields = ['id','code','created_at']
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta :
@@ -141,7 +145,7 @@ class ProductSerializer(serializers.ModelSerializer):
      
     class Meta:
        model = Product
-       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes','images','uploaded_images']
+       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes','created_at','images','uploaded_images']
 
     def create(self, validated_data):
         uploaded_data = validated_data.pop('uploaded_images')
@@ -185,7 +189,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class PanierSerializer(serializers.ModelSerializer):
     class Meta :
         model = Panier
-        fields = ['id','owner','address','tel']
+        fields = ['id','owner','address','tel','created_at']
     
     
 
