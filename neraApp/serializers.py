@@ -7,6 +7,7 @@ import decimal
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime
 
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
@@ -184,12 +185,51 @@ class ProductSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta :
         model = Order
-        fields = ['id','panier','product','color','size','state']
+        fields = ['id','panier','product','color','size','state','price_to_pay']
 
 class PanierSerializer(serializers.ModelSerializer):
     class Meta :
         model = Panier
         fields = ['id','owner','address','tel','created_at']
+
+class CodePromoSerializer(serializers.ModelSerializer):
+    products= serializers.PrimaryKeyRelatedField(
+        queryset= Product.objects.all(),
+        many=True,
+        required= False
+    )
+    subCategories = serializers.PrimaryKeyRelatedField(
+        queryset= SubCategorie.objects.all(),
+        many=True,
+        required= False
+    )
+    users = serializers.PrimaryKeyRelatedField(
+        queryset= User.objects.all(),
+        many=True,
+        required= False
+    )
+    class Meta :
+        model = CodePromo
+        fields = ['id','code','percentage','type','products','subCategories','users','date_limit']
+
+    def update(self, instance, validated_data):
+        instance.code = validated_data.get('code')
+        instance.percentage = validated_data.get('percentage')
+        instance.type = validated_data.get('type')
+        instance.date_limit = validated_data.get('date_limit')
+        subCategories = validated_data.pop('subCategories')
+        for sub_cat in subCategories :
+            instance.subCategories.add(sub_cat)
+        products = validated_data.pop('products')
+        for product in products :
+            instance.products.add(product)
+        users = validated_data.pop('users')
+        for user in users :
+            if  user in instance.users.all():
+                error = {'message':  'code can be user only once'}
+                raise serializers.ValidationError(error) 
+            instance.users.add(user)
+        return instance
     
     
 
