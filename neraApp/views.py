@@ -59,7 +59,7 @@ class SubCategorieView(viewsets.ModelViewSet):
     queryset = SubCategorie.objects.all()
     serializer_class = SubCategorieSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['name','categorie','created_at']
+    search_fields = ['name','categorie__id','created_at']
     ordering_fields = ['name','categorie','created_at']
 
 class ColorView(viewsets.ModelViewSet):
