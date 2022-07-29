@@ -1,3 +1,4 @@
+from itertools import product
 from unicodedata import decimal
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
@@ -102,14 +103,24 @@ class ProductTypeSerializer(serializers.ModelSerializer):
         lookup_fields = 'id'
 
 class CategorieSerializer(serializers.ModelSerializer):
+    types = serializers.PrimaryKeyRelatedField(
+        queryset= ProductType.objects.all(),
+        many=True,
+        required=True
+    )
     class Meta :
         model = Categorie
-        fields = ['id','name','created_at']
+        fields = ['id','name','types','created_at']
 
 class SubCategorieSerializer(serializers.ModelSerializer):
+    categories = serializers.PrimaryKeyRelatedField(
+        queryset= Categorie.objects.all(),
+        many=True,
+        required=True
+    )
     class Meta :
         model = SubCategorie
-        fields = ['id','name','categorie','created_at']
+        fields = ['id','name','categories','created_at']
 
 class ColorSerializer(serializers.ModelSerializer):
     class Meta :
@@ -137,21 +148,25 @@ class ProductSerializer(serializers.ModelSerializer):
         many=True,
         required= True
     )
-    sub_categories= serializers.PrimaryKeyRelatedField(
-        queryset= SubCategorie.objects.all(),
-        many=True,
-        required= False
-    )
     images= ImageSerializer(many=True, read_only = True,required = False)
     uploaded_images = serializers.ListField ( child = serializers.FileField(max_length = 1000000, allow_empty_file =True, use_url = False) , write_only = True )
+    tags = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
+    update_tags = serializers.ListField(
+        child=serializers.CharField(max_length=100), write_only=True)
      
     class Meta:
        model = Product
-       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes','created_at','images','uploaded_images']
+       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','sub_categorie','type','available_colors','available_sizes','created_at','images','uploaded_images','tags','update_tags']
 
     def create(self, validated_data):
         uploaded_data = validated_data.pop('uploaded_images')
+        tag_names = validated_data.pop('update_tags')
+        tags = []
         new_product = super().create(validated_data)
+        for name in tag_names:
+            tag, created = Tag.objects.get_or_create(name=name)
+            tags.append(tag)
+        product.tags.set(tags)
         print(new_product.name)
         regular_price = new_product.regular_price
         percentage = decimal.Decimal(new_product.disc_per / 100)
@@ -171,15 +186,20 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.disc_per = validated_data.get('disc_per', instance.disc_per)
         instance.type = validated_data.get('type', instance.type)
         instance.name = validated_data.get('name', instance.name)
-        sub_categories = validated_data.pop('sub_categories')
-        for sub_cat in sub_categories :
-            instance.sub_categories.add(sub_cat)
+        instance.sub_categorie = validated_data.get('sub_categorie',instance.sub_categorie)
+       
         available_colors= validated_data.pop('available_colors')
         for color in available_colors :
             instance.available_colors.add(color)
         available_sizes = validated_data.pop('available_sizes')
         for size in available_sizes :
             instance.available_sizes.add(size)
+        tag_names = validated_data.pop('update_tags')
+        tags = []
+        for name in tag_names:
+            tag, created = Tag.objects.get_or_create(name=name)
+            tags.append(tag)
+        instance.tags.set(tags)
         instance.save() 
         return instance
 
@@ -235,6 +255,11 @@ class CodePromoSerializer(serializers.ModelSerializer):
 class WishlistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wishlist
-        fields = ['id','owner']    
+        fields = ['id','owner']
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta : 
+        model = Tag
+        fields = ['id','name']    
 
     

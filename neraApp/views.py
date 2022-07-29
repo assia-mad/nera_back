@@ -53,16 +53,16 @@ class CategorieView(viewsets.ModelViewSet):
     serializer_class = CategorieSerializer
     pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['name','created_at']
-    ordering_fields = ['name','created_at']
+    search_fields = ['name','types','created_at']
+    ordering_fields = ['name','types','created_at']
 
 class SubCategorieView(viewsets.ModelViewSet):
     queryset = SubCategorie.objects.all()
     serializer_class = SubCategorieSerializer
     pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['name','categorie__id','created_at']
-    ordering_fields = ['name','categorie','created_at']
+    search_fields = ['name','categories','created_at']
+    ordering_fields = ['name','categories','created_at']
 
 class ColorView(viewsets.ModelViewSet):
     queryset = Color.objects.all()
@@ -89,10 +89,10 @@ class ProductView(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes']
-    filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes']
-    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes']
-    ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categories','available_colors','available_sizes']
+    filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
+    filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
+    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
+    ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
     
 class OrderView(viewsets.ModelViewSet):
     queryset = Order.objects.all()

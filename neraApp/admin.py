@@ -11,7 +11,7 @@ class ProductImageAdmin(admin.StackedInline):
  
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductImageAdmin]
+    inlines = [ProductImageAdmin ]
  
     class Meta:
        model = Product
@@ -19,4 +19,6 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
     pass
+
 # admin.site.register(Product)
+ 

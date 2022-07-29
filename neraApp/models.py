@@ -1,5 +1,6 @@
 from enum import Flag
 from pickle import FROZENSET
+from typing import Type
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
@@ -35,13 +36,14 @@ class ProductType( models.Model):
 
 class Categorie(models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
+    types = models.ManyToManyField(ProductType , related_name='categories')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
 
 class SubCategorie(models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
-    categorie = models.ForeignKey(Categorie , related_name='categorie',on_delete=models.CASCADE)
+    categories = models.ManyToManyField(Categorie , related_name='sub_categorie')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
@@ -57,6 +59,9 @@ class Size(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.code
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100)
 #produit
 class Product(models.Model):
     owner = models.ForeignKey(User , related_name='product_owner', on_delete=models.CASCADE)
@@ -66,9 +71,10 @@ class Product(models.Model):
     disc_price = models.DecimalField(decimal_places =2,max_digits = 10 , blank=True , null= True ) #  price after a discount
     disc_per= models.DecimalField(decimal_places =2,max_digits = 3,  default= 0.00)
     type = models.ForeignKey(ProductType , related_name='product_type', on_delete=models.CASCADE)
-    sub_categories = models.ManyToManyField(SubCategorie , related_name='product_sub_categories')
+    sub_categorie = models.ForeignKey(SubCategorie , related_name='product_sub_categorie', on_delete=models.CASCADE)
     available_colors = models.ManyToManyField(Color , related_name='product_colours')
     available_sizes = models.ManyToManyField(Size , related_name='product_sizes')
+    tags = models.ManyToManyField(Tag , related_name='Product')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -97,6 +103,9 @@ class CodePromo(models.Model):
     subCategories = models.ManyToManyField(SubCategorie , related_name='code_promo_sub_categories')
     date_limit =  models.DateField(blank=False , null=False)
 
+class Wishlist(models.Model):
+    owner = models.OneToOneField(User , related_name='wishlist', on_delete= models.CASCADE)
+
 #commande
 class Order(models.Model):
     panier = models.ForeignKey(Panier , related_name='order',on_delete= models.CASCADE , null= True)
@@ -105,14 +114,14 @@ class Order(models.Model):
     price_to_pay = models.DecimalField(decimal_places =2,max_digits =10 )
     color = models.CharField(max_length=7 , blank=False , null = False)
     size = models.CharField(max_length=10 , blank= False , null = False)
+    wishlist = models.ForeignKey(Wishlist, related_name='orders',on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class FavoriteList(models.Model):
     owner = models.OneToOneField(User , related_name='Favoritelist', on_delete= models.CASCADE)
     products = models.ManyToManyField(Product , related_name='favorite_products')
 
-class Wishlist(models.Model):
-    owner = models.OneToOneField(User , related_name='wishlist', on_delete= models.CASCADE)
+
 
 
 
