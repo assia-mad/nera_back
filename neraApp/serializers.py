@@ -80,6 +80,7 @@ class CustomRegisterSerializer(RegisterSerializer):
     def save(self, request):
         user =super().save(request)
         Favorite = FavoriteList.objects.create(owner = user)
+        wishlist = Wishlist.objects.create(owner = user)
         return user
 
 class CustomLoginSerializer(LoginSerializer): 
@@ -230,7 +231,10 @@ class CodePromoSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(error) 
             instance.users.add(user)
         return instance
-    
-    
+
+class WishlistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wishlist
+        fields = ['id','owner']    
 
     

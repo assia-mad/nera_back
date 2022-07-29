@@ -16,7 +16,6 @@ from datetime import datetime
 
 # manage users by Admin
 class ManageUsersView(viewsets.ModelViewSet):
-
     queryset = User.objects.all()
     serializer_class = ManageusersSerializer
     permission_classes = [IsAuthenticated]
@@ -44,6 +43,7 @@ class FacebookLogin(SocialLoginView):
 class ProductTypeView(viewsets.ModelViewSet):
     queryset = ProductType.objects.all()
     serializer_class = ProductTypeSerializer
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['name','created_at']
     ordering_fields = ['name','created_at']
@@ -51,6 +51,7 @@ class ProductTypeView(viewsets.ModelViewSet):
 class CategorieView(viewsets.ModelViewSet):
     queryset = Categorie.objects.all()
     serializer_class = CategorieSerializer
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['name','created_at']
     ordering_fields = ['name','created_at']
@@ -58,6 +59,7 @@ class CategorieView(viewsets.ModelViewSet):
 class SubCategorieView(viewsets.ModelViewSet):
     queryset = SubCategorie.objects.all()
     serializer_class = SubCategorieSerializer
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['name','categorie__id','created_at']
     ordering_fields = ['name','categorie','created_at']
@@ -65,6 +67,7 @@ class SubCategorieView(viewsets.ModelViewSet):
 class ColorView(viewsets.ModelViewSet):
     queryset = Color.objects.all()
     serializer_class = ColorSerializer
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['code','created_at']
     ordering_fields = ['code','created_at']
@@ -72,6 +75,7 @@ class ColorView(viewsets.ModelViewSet):
 class SizeView(viewsets.ModelViewSet):
     queryset = Size.objects.all()
     serializer_class =SizeSerializer
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['code','created_at']
     ordering_fields = ['code','created_at']
@@ -130,3 +134,14 @@ class CodePromoView(viewsets.ModelViewSet):
     filterset_fields = ['code','percentage','type','products','subCategories','users','date_limit']
     search_fields = ['code','percentage','type','products__id','subCategories__id','users__id','date_limit']
     ordering_fields = ['code','percentage','type','products','subCategories','users','date_limit']
+
+class WishlistView(viewsets.ModelViewSet):
+    queryset = Wishlist.objects.all()
+    serializer_class = WishlistSerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['owner']
+    filterset_fields = ['owner']
+    search_fields = ['owner__id']
+    ordering_fields = ['owner']
+

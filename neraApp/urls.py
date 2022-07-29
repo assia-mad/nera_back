@@ -34,6 +34,7 @@ router.register('panier', PanierView, basename='panier')
 router.register('favorites', FavoriteListView, basename='favorites')
 router.register('manage_users',ManageUsersView , basename= 'manage_users')
 router.register('code_promo',CodePromoView , basename='code_promo')
+router.register('wishlists',WishlistView , basename='wishlists')
 
 urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
