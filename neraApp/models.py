@@ -21,12 +21,18 @@ codePromo_choices = [
     ('normal','normal'),
     ('influencer','influencer'),
 ]
+gender_choices = [
+    ('féminin','féminin'),
+    ('masculin','masculin'),
+]
 
 class User(AbstractUser):
     address = models.CharField(max_length=150 , blank=True , null= True)
     tel = models.CharField(max_length=10 , validators=[num_only],blank=True)
     image = models.ImageField(upload_to='profile_images/', blank = True , null = True , verbose_name='user_img')
-    role = role = models.CharField(max_length=30 , choices=role_choices , default=role_choices[1])
+    role =  models.CharField(max_length=30 , choices=role_choices , default=role_choices[1])
+    gender =  models.CharField(max_length=30 , choices=gender_choices, blank= True , null= True )
+    age = models.PositiveIntegerField(blank=True , null= True)
 
 class ProductType( models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
@@ -62,6 +68,8 @@ class Size(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name
 #produit
 class Product(models.Model):
     owner = models.ForeignKey(User , related_name='product_owner', on_delete=models.CASCADE)
@@ -83,7 +91,6 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name= 'product_images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to = 'product_images/', blank = False , null= False)
- 
     def __str__(self):
         return self.image.url
 
@@ -102,6 +109,8 @@ class CodePromo(models.Model):
     users = models.ManyToManyField(User,related_name='code_promo_users')
     subCategories = models.ManyToManyField(SubCategorie , related_name='code_promo_sub_categories')
     date_limit =  models.DateField(blank=False , null=False)
+    def __str__(self):
+        return self.code
 
 class Wishlist(models.Model):
     owner = models.OneToOneField(User , related_name='wishlist', on_delete= models.CASCADE)

@@ -5,7 +5,7 @@ admin.site.register(User)
 from django.contrib import admin
 from .models import Product, ProductImage
 
-
+admin.site.register(Tag)
 class ProductImageAdmin(admin.StackedInline):
     model = ProductImage
  

@@ -13,7 +13,7 @@ from datetime import datetime
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','is_staff', 'is_active']
 
 
 class UpdateUsersByAdminSerializer(serializers.Serializer):
@@ -69,6 +69,8 @@ class CustomRegisterSerializer(RegisterSerializer):
     email = serializers.EmailField(required = True)
     address = serializers.CharField(max_length=150 ,required = True)
     tel = serializers.CharField(max_length=10 , validators=[num_only], required = True)
+    gender = serializers.ChoiceField(choices= gender_choices)
+    age = serializers.IntegerField(min_value = 10)
     password1 = serializers.CharField( write_only=True, required=True, style={'input_type': 'password', })
     password2 = serializers.CharField( write_only=True, required=True, style={'input_type': 'password', })
     def get_cleaned_data(self):
@@ -77,6 +79,8 @@ class CustomRegisterSerializer(RegisterSerializer):
         data_dict['last_name'] = self.validated_data.get('last_name', '')
         data_dict['address'] = self.validated_data.get('address', '')
         data_dict['tel'] = self.validated_data.get('tel', '')
+        data_dict['gender'] = self.validated_data.get('gender', '')
+        data_dict['age'] = self.validated_data.get('age', '')
         return data_dict
     def save(self, request):
         user =super().save(request)
@@ -92,9 +96,11 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
     tel = serializers.CharField(max_length=10 , validators=[num_only])
     image = serializers.ImageField(allow_null=True)
     role = serializers.ChoiceField(choices= role_choices)
+    gender = serializers.ChoiceField(choices= gender_choices)
+    age = serializers.IntegerField(min_value = 10)
     class Meta : 
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','is_staff', 'is_active']
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :
@@ -152,7 +158,7 @@ class ProductSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField ( child = serializers.FileField(max_length = 1000000, allow_empty_file =True, use_url = False) , write_only = True )
     tags = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
     update_tags = serializers.ListField(
-        child=serializers.CharField(max_length=100), write_only=True)
+        child=serializers.CharField(max_length=100), write_only=True , required = False)
      
     class Meta:
        model = Product
@@ -166,11 +172,13 @@ class ProductSerializer(serializers.ModelSerializer):
         for name in tag_names:
             tag, created = Tag.objects.get_or_create(name=name)
             tags.append(tag)
-        product.tags.set(tags)
+        new_product.tags.set(tags)
         print(new_product.name)
         regular_price = new_product.regular_price
         percentage = decimal.Decimal(new_product.disc_per / 100)
         new_product.disc_price = regular_price - (regular_price * percentage)
+        print(new_product.disc_price)
+        new_product.save()
         for uploaded_item in uploaded_data:
             new_product_image = ProductImage.objects.create(product = new_product, image = uploaded_item)
         return new_product       
