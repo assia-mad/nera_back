@@ -85,6 +85,7 @@ class ProductImageView(viewsets.ModelViewSet):
     serializer_class = ImageSerializer
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    pagination_class = None
     filter_fields = ['product']
     filterset_fields = ['product']
     search_fields = ['product__id']
