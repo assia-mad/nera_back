@@ -1,3 +1,5 @@
+from distutils.command.upload import upload
+from email.mime import image
 from enum import Flag
 from pickle import FROZENSET
 from typing import Type
@@ -97,9 +99,16 @@ class ProductImage(models.Model):
 class Panier(models.Model):
     owner = models.ForeignKey(User , related_name='panier',on_delete= models.CASCADE)
     address = models.CharField(max_length=150 , blank= False , null= False)
+    wilaya = models.CharField(max_length=100 , blank= False , null= False)
+    postal_code = models.PositiveIntegerField()
+    payment_delivry = models.CharField(max_length=150 , blank= False , null= False)
     tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class PaymentConfirm(models.Model):
+    transaction_code = models.CharField(max_length=150 , blank=True , null= True)
+    image = models.ImageField(upload_to='payment_confirm/', blank = True , null = True , verbose_name='payment_confirm')
+    panier = models.OneToOneField(Panier , related_name='payment_confirm', on_delete= models.CASCADE)
 
 class CodePromo(models.Model):
     code = models.CharField(max_length=50 , blank= False , null= False)

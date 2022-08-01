@@ -141,7 +141,7 @@ class SizeSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.ModelSerializer):
     class Meta :
         model = ProductImage
-        fields = ['image']
+        fields = ['image','product']
 
 class ProductSerializer(serializers.ModelSerializer):
     available_colors = serializers.PrimaryKeyRelatedField(
@@ -219,7 +219,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class PanierSerializer(serializers.ModelSerializer):
     class Meta :
         model = Panier
-        fields = ['id','owner','address','tel','created_at']
+        fields = ['id','owner','address','wilaya','postal_code','payment_delivry','tel','created_at']
 
 class CodePromoSerializer(serializers.ModelSerializer):
     products= serializers.PrimaryKeyRelatedField(
@@ -269,5 +269,10 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Tag
         fields = ['id','name']    
+
+class PaymentConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentConfirm
+        fields = ['id','transaction_code','image','panier']
 
     

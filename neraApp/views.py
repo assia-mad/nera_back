@@ -83,6 +83,12 @@ class SizeView(viewsets.ModelViewSet):
 class ProductImageView(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ImageSerializer
+    # permission_classes = [IsAuthenticated , AdminOrownerPermission]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['product']
+    filterset_fields = ['product']
+    search_fields = ['product__id']
+    ordering_fields = ['product']
     
 class ProductView(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -144,4 +150,14 @@ class WishlistView(viewsets.ModelViewSet):
     filterset_fields = ['owner']
     search_fields = ['owner__id']
     ordering_fields = ['owner']
+
+class PaymentConfirmView(viewsets.ModelViewSet):
+    queryset = PaymentConfirm.objects.all()
+    serializer_class = PaymentConfirmSerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['transaction_code','panier']
+    filterset_fields = ['transaction_code','panier']
+    search_fields = ['transaction_code','panier__id']
+    ordering_fields = ['transaction_code','panier']
 
