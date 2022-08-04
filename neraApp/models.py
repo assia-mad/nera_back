@@ -1,11 +1,13 @@
 from distutils.command.upload import upload
 from email.mime import image
 from enum import Flag
+from hashlib import blake2b
 from pickle import FROZENSET
 from typing import Type
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.dispatch import receiver
 
 
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
@@ -27,6 +29,20 @@ gender_choices = [
     ('féminin','féminin'),
     ('masculin','masculin'),
 ]
+payment_choices = [
+    ('main à main','main à main'),
+    ('CCP/BaridiMob','CCP/BaridiMob'),
+]
+product_gender_choices = [
+    ('féminin','féminin'),
+    ('masculin','masculin'),
+    ('mixte','mixte'),
+]
+panier_state = [
+    ('payé','payé'),
+    ('non payé','non payé'),
+]
+
 
 class User(AbstractUser):
     address = models.CharField(max_length=150 , blank=True , null= True)
@@ -38,6 +54,7 @@ class User(AbstractUser):
 
 class ProductType( models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
+    image = models.ImageField(upload_to='type_images/', blank = True , null = True , verbose_name='type_img')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
@@ -45,25 +62,27 @@ class ProductType( models.Model):
 class Categorie(models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
     types = models.ManyToManyField(ProductType , related_name='categories')
+    image = models.ImageField(upload_to='categorie_images/', blank = True , null = True , verbose_name='categorie_img')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
 
 class SubCategorie(models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
+    image = models.ImageField(upload_to='sub_categorie_images/', blank = True , null = True , verbose_name='sub_categorie_img')
     categories = models.ManyToManyField(Categorie , related_name='sub_categorie')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
 
 class Color(models.Model):
-    code = models.CharField(max_length= 7 , blank= False , null = False)
+    code = models.CharField(max_length= 7 ,unique=True, blank= False , null = False)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.code
 
 class Size(models.Model):
-    code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10 , unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.code
@@ -85,6 +104,7 @@ class Product(models.Model):
     available_colors = models.ManyToManyField(Color , related_name='product_colours')
     available_sizes = models.ManyToManyField(Size , related_name='product_sizes')
     tags = models.ManyToManyField(Tag , related_name='Product')
+    gender = models.CharField(max_length=50, choices=product_gender_choices, default=product_gender_choices[2])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -95,13 +115,42 @@ class ProductImage(models.Model):
     image = models.ImageField(upload_to = 'product_images/', blank = False , null= False)
     def __str__(self):
         return self.image.url
+        
+class Company(models.Model):
+    name = models.CharField(max_length=150 , blank= False , null= False)
+    def __str__(self):
+        return self.name
+
+class Wilaya(models.Model):
+    company = models.ForeignKey(Company , related_name='wilaya', on_delete=models.CASCADE)
+    name = models.CharField(max_length= 100 , blank= False , null= False)
+    delivery_price = models.PositiveIntegerField(blank= False , null= False) # if not livraison a domicile
+    def __str__(self):
+        return self.name +' '+ self.company.name
+
+class Commune(models.Model):
+    name = models.CharField(max_length= 100 , blank= False , null= False)
+    wilaya = models.ForeignKey(Wilaya , related_name='commune', on_delete= models.CASCADE)
+    delivery_price = models.PositiveBigIntegerField(blank= False , null= False)
+    def __str__(self):
+        return self.name
+
+class Delivery(models.Model):
+    company = models.ForeignKey(Company,related_name='delivery',on_delete=models.CASCADE)
+    payment_method = models.CharField(max_length=150 , choices= payment_choices , default= payment_choices[0])
+    description = models.TextField(blank= True , null= True)
+    def __str__(self):
+        return self.company.name +','+ self.payment_method
+    
 
 class Panier(models.Model):
     owner = models.ForeignKey(User , related_name='panier',on_delete= models.CASCADE)
-    address = models.CharField(max_length=150 , blank= False , null= False)
-    wilaya = models.CharField(max_length=100 , blank= False , null= False)
+    detailed_place = models.CharField(max_length=150 , blank= False , null= False)
+    wilaya = models.CharField(max_length=50 , blank= False , null= False)
+    commune = models.CharField(max_length=50 , blank= False , null= False)
     postal_code = models.PositiveIntegerField()
-    payment_delivry = models.CharField(max_length=150 , blank= False , null= False)
+    payment_delivry = models.ForeignKey(Delivery , related_name='Panier', on_delete= models.CASCADE)
+    state = models.CharField(max_length=50 , choices= panier_state , default= panier_state[1])
     tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -111,7 +160,7 @@ class PaymentConfirm(models.Model):
     panier = models.OneToOneField(Panier , related_name='payment_confirm', on_delete= models.CASCADE)
 
 class CodePromo(models.Model):
-    code = models.CharField(max_length=50 , blank= False , null= False)
+    code = models.CharField(max_length=50 ,unique= True, blank= False , null= False)
     percentage = models.DecimalField(decimal_places =2,max_digits = 4)
     type =  models.CharField(max_length=30 , choices= codePromo_choices , default= codePromo_choices[0])
     products = models.ManyToManyField(Product , related_name='code_promo_products')
@@ -123,6 +172,7 @@ class CodePromo(models.Model):
 
 class Wishlist(models.Model):
     owner = models.OneToOneField(User , related_name='wishlist', on_delete= models.CASCADE)
+    users = models.ManyToManyField(User , related_name='whishlists')
 
 #commande
 class Order(models.Model):
@@ -139,11 +189,7 @@ class FavoriteList(models.Model):
     owner = models.OneToOneField(User , related_name='Favoritelist', on_delete= models.CASCADE)
     products = models.ManyToManyField(Product , related_name='favorite_products')
 
-
-
-
-
-
-
-
-
+class Request(models.Model):
+    sender = models.ForeignKey(User , related_name='request_sent', on_delete= models.CASCADE)
+    Wishlist = models.ForeignKey(Wishlist , related_name='request',on_delete= models.CASCADE)
+    is_accepted = models.BooleanField(default= False)

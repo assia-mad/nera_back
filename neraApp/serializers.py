@@ -162,7 +162,7 @@ class ProductSerializer(serializers.ModelSerializer):
      
     class Meta:
        model = Product
-       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','sub_categorie','type','available_colors','available_sizes','created_at','images','uploaded_images','tags','update_tags']
+       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','sub_categorie','type','available_colors','available_sizes','gender','created_at','images','uploaded_images','tags','update_tags']
 
     def create(self, validated_data):
         uploaded_data = validated_data.pop('uploaded_images')
@@ -182,7 +182,6 @@ class ProductSerializer(serializers.ModelSerializer):
         for uploaded_item in uploaded_data:
             new_product_image = ProductImage.objects.create(product = new_product, image = uploaded_item)
         return new_product       
-   
     
     def update(self, instance, validated_data):
         percentage = validated_data.get('disc_per') / 100
@@ -195,7 +194,7 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.type = validated_data.get('type', instance.type)
         instance.name = validated_data.get('name', instance.name)
         instance.sub_categorie = validated_data.get('sub_categorie',instance.sub_categorie)
-       
+        instance.gender = validated_data.get('gender',instance.gender) 
         available_colors= validated_data.pop('available_colors')
         for color in available_colors :
             instance.available_colors.add(color)
@@ -216,11 +215,36 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id','panier','product','color','size','state','price_to_pay']
 
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Company
+        fields = ['id','name']
+
+class WilayaSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Wilaya
+        fields = ['id','company','name','delivery_price']
+
+class CommuneSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Commune
+        fields = ['id','name','wilaya','delivery_price']
+
+class DeliverySerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Delivery
+        fields = ['id','company','payment_method','description']
+
 class PanierSerializer(serializers.ModelSerializer):
     class Meta :
         model = Panier
-        fields = ['id','owner','address','wilaya','postal_code','payment_delivry','tel','created_at']
+        fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at']
 
+class PaymentConfirmSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = PaymentConfirm
+        fields = ['id','transaction_code','image','panier']
+ 
 class CodePromoSerializer(serializers.ModelSerializer):
     products= serializers.PrimaryKeyRelatedField(
         queryset= Product.objects.all(),
@@ -261,9 +285,15 @@ class CodePromoSerializer(serializers.ModelSerializer):
         return instance
 
 class WishlistSerializer(serializers.ModelSerializer):
+    users = serializers.PrimaryKeyRelatedField(
+        queryset= User.objects.all(),
+        many=True,
+        required= False
+    )
     class Meta:
         model = Wishlist
-        fields = ['id','owner']
+        fields = ['id','owner','users']
+ 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta : 
@@ -275,4 +305,15 @@ class PaymentConfirmSerializer(serializers.ModelSerializer):
         model = PaymentConfirm
         fields = ['id','transaction_code','image','panier']
 
+class RequestSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Request
+        fields = ['id','sender','wishlist','is_accepted']    
+    def update(self, instance, validated_data):
+        is_accepted = validated_data.get('is_accepted')
+        wishlist = validated_data.get('wishlist')
+        sender = validated_data.get('sender')
+        if is_accepted == True :
+            wishlist.users.add(sender)
+        return super().update(instance, validated_data)
     

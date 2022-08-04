@@ -116,10 +116,10 @@ class PanierView(viewsets.ModelViewSet):
     serializer_class = PanierSerializer
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['owner','address','tel']
-    filterset_fields = ['owner','address','tel']
-    search_fields = ['owner__id','address','tel']
-    ordering_fields = ['owner','address','tel']
+    filter_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
+    filterset_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
+    search_fields = ['owner__id','detailed_place','wilaya__id','commune__id','postal_code','payment_delivry__id','tel']
+    ordering_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
 
 class FavoriteListView(viewsets.ModelViewSet):
     queryset = FavoriteList.objects.all()
@@ -161,4 +161,65 @@ class PaymentConfirmView(viewsets.ModelViewSet):
     filterset_fields = ['transaction_code','panier']
     search_fields = ['transaction_code','panier__id']
     ordering_fields = ['transaction_code','panier']
+
+class WilayaView(viewsets.ModelViewSet):
+    queryset = Wilaya.objects.all()
+    serializer_class = WilayaSerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['name','delivery_price']
+    filterset_fields = ['name','delivery_price']
+    search_fields = ['name','delivery_price']
+    ordering_fields = ['name','delivery_price']
+
+class CommuneView(viewsets.ModelViewSet):
+    queryset = Commune.objects.all()
+    serializer_class = CommuneSerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['name','wilaya','delivery_price']
+    filterset_fields = ['name','wilaya','delivery_price']
+    search_fields = ['name','wilaya__id','delivery_price']
+    ordering_fields = ['name','wilaya','delivery_price']
+
+class DeliveryView(viewsets.ModelViewSet):
+    queryset = Delivery.objects.all()
+    serializer_class = DeliverySerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['company','payment_method']
+    filterset_fields = ['company','payment_method']
+    search_fields = ['company__id','payment_method']
+    ordering_fields = ['company','payment_method']
+
+class PaymentConfirmView(viewsets.ModelViewSet):
+    queryset = PaymentConfirm.objects.all()
+    serializer_class = PaymentConfirmSerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['transaction_code','panier']
+    filterset_fields = ['transaction_code','panier']
+    search_fields = ['transaction_code','panier__id']
+    ordering_fields = ['transaction_code','panier']
+
+class CompanyView(viewsets.ModelViewSet):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['name']
+    filterset_fields = ['name']
+    search_fields = ['name']
+    ordering_fields = ['name']
+
+class RequestView(viewsets.ModelViewSet):
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+     # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['sender','wishlist','is_accepted']
+    filterset_fields = ['sender','wishlist','is_accepted']
+    search_fields = ['sender__id','wishlist__id','is_accepted']
+    ordering_fields = ['sender','wishlist','is_accepted']
+
 

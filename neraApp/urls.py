@@ -35,6 +35,12 @@ router.register('favorites', FavoriteListView, basename='favorites')
 router.register('manage_users',ManageUsersView , basename= 'manage_users')
 router.register('code_promo',CodePromoView , basename='code_promo')
 router.register('wishlists',WishlistView , basename='wishlists')
+router.register('wilayas',WilayaView , basename='wilayas')
+router.register('communes',CommuneView , basename='communes')
+router.register('delivery',DeliveryView , basename='delivery')
+router.register('payment_confirm', PaymentConfirmView , basename='payment_confirm')
+router.register('companies',CompanyView , basename='companies')
+router.register('requests',RequestView , basename= 'requests')
 
 urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
