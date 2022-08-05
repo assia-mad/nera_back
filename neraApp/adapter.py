@@ -7,5 +7,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         data = form.cleaned_data
         user.address = data.get('address')
         user.tel= data.get('tel')
+        user.gender= data.get('gender')
+        user.age = data.get('age')
         user.save()
         return user

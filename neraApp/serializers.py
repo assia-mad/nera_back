@@ -83,7 +83,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         data_dict['age'] = self.validated_data.get('age', '')
         return data_dict
     def save(self, request):
-        user =super().save(request)
+        user = super().save(request)
         Favorite = FavoriteList.objects.create(owner = user)
         wishlist = Wishlist.objects.create(owner = user)
         return user
@@ -213,7 +213,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta :
         model = Order
-        fields = ['id','panier','product','color','size','state','price_to_pay']
+        fields = ['id','panier','product','color','size','state','wishlist','price_to_pay']
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta :

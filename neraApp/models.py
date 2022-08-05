@@ -191,5 +191,5 @@ class FavoriteList(models.Model):
 
 class Request(models.Model):
     sender = models.ForeignKey(User , related_name='request_sent', on_delete= models.CASCADE)
-    Wishlist = models.ForeignKey(Wishlist , related_name='request',on_delete= models.CASCADE)
+    wishlist = models.ForeignKey(Wishlist , related_name='request',on_delete= models.CASCADE)
     is_accepted = models.BooleanField(default= False)

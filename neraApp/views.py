@@ -106,10 +106,10 @@ class OrderView(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['panier','product','color','size','state']
-    filterset_fields = ['panier','product','color','size','state']
-    search_fields = ['panier__id','product__id','color','size','state']
-    ordering_fields = ['panier','product','color','size','state']
+    filter_fields = ['panier','product','color','size','state','wishlist']
+    filterset_fields = ['panier','product','color','size','state','wishlist']
+    search_fields = ['panier__id','product__id','color','size','state','wishlist__id']
+    ordering_fields = ['panier','product','color','size','state','wishlist']
 
 class PanierView(viewsets.ModelViewSet):
     queryset = Panier.objects.all()
