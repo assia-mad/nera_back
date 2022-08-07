@@ -126,7 +126,7 @@ class Wilaya(models.Model):
     name = models.CharField(max_length= 100 , blank= False , null= False)
     delivery_price = models.PositiveIntegerField(blank= False , null= False) # if not livraison a domicile
     def __str__(self):
-        return self.name +' '+ self.company.name
+        return self.name +' '+ self.company.nam
 
 class Commune(models.Model):
     name = models.CharField(max_length= 100 , blank= False , null= False)
@@ -176,6 +176,7 @@ class Wishlist(models.Model):
 
 #commande
 class Order(models.Model):
+    owner = models.OneToOneField(User , related_name='orders', on_delete= models.CASCADE)
     panier = models.ForeignKey(Panier , related_name='order',on_delete= models.CASCADE , null= True)
     product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
     state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
@@ -183,6 +184,7 @@ class Order(models.Model):
     color = models.CharField(max_length=7 , blank=False , null = False)
     size = models.CharField(max_length=10 , blank= False , null = False)
     wishlist = models.ForeignKey(Wishlist, related_name='orders',on_delete=models.CASCADE, null=True)
+    qte = models.PositiveIntegerField(default = 1)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class FavoriteList(models.Model):

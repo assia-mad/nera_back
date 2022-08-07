@@ -19,7 +19,7 @@ class ManageUsersView(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = ManageusersSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = ManageUsersPagination
+    pagination_class = CustomPagination
     parser_classes = [FormParser, JSONParser, MultiPartParser]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active']
@@ -94,6 +94,7 @@ class ProductImageView(viewsets.ModelViewSet):
 class ProductView(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    pagination_class = CustomPagination
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
@@ -104,12 +105,13 @@ class ProductView(viewsets.ModelViewSet):
 class OrderView(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['panier','product','color','size','state','wishlist']
-    filterset_fields = ['panier','product','color','size','state','wishlist']
-    search_fields = ['panier__id','product__id','color','size','state','wishlist__id']
-    ordering_fields = ['panier','product','color','size','state','wishlist']
+    filter_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
+    filterset_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
+    search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','created_at']
+    ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
 
 class PanierView(viewsets.ModelViewSet):
     queryset = Panier.objects.all()
@@ -135,6 +137,7 @@ class CodePromoView(viewsets.ModelViewSet):
     current = datetime.now()
     queryset = CodePromo.objects.filter(date_limit__gte = current)
     serializer_class = CodePromoSerializer
+    pagination_class = CustomPagination
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['code','percentage','type','products','subCategories','users','date_limit']
