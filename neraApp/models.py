@@ -176,7 +176,7 @@ class Wishlist(models.Model):
 
 #commande
 class Order(models.Model):
-    owner = models.OneToOneField(User , related_name='orders', on_delete= models.CASCADE , null=True)
+    owner = models.ForeignKey(User , related_name='orders', on_delete= models.CASCADE , null=True)
     panier = models.ForeignKey(Panier , related_name='order',on_delete= models.CASCADE , null= True)
     product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
     state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
