@@ -346,5 +346,5 @@ class Settingserializer(serializers.ModelSerializer):
 
 class NewsSerializer(serializers.ModelSerializer):
     class Meta :
-        model = Settings
+        model = News
         fields = ['id','image']
