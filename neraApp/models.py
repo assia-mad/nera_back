@@ -15,6 +15,7 @@ num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 role_choices = [ 
     ('Admin','Admin'),
     ('Client','Client'),
+    ('influencer','influencer'),
 ]
 order_states = [
     ('non_traitée','non_traitée'),
@@ -51,6 +52,7 @@ class User(AbstractUser):
     role =  models.CharField(max_length=30 , choices=role_choices , default=role_choices[1])
     gender =  models.CharField(max_length=30 , choices=gender_choices, blank= True , null= True )
     age = models.PositiveIntegerField(blank=True , null= True)
+    qte_purchased = models.PositiveIntegerField(default=0)
 
 class ProductType( models.Model):
     name = models.CharField(max_length=100 , blank= False , null = False)
@@ -161,6 +163,8 @@ class PaymentConfirm(models.Model):
 
 class CodePromo(models.Model):
     code = models.CharField(max_length=50 ,unique= True, blank= False , null= False)
+    influencer = models.ForeignKey(User , related_name='code_promo_influencer',on_delete= models.CASCADE, null= True)
+    used_one_time = models.BooleanField(default=True) #if code promo can be used once 
     percentage = models.DecimalField(decimal_places =2,max_digits = 4)
     type =  models.CharField(max_length=30 , choices= codePromo_choices , default= codePromo_choices[0])
     products = models.ManyToManyField(Product , related_name='code_promo_products')
@@ -180,7 +184,7 @@ class Order(models.Model):
     panier = models.ForeignKey(Panier , related_name='order',on_delete= models.CASCADE , null= True)
     product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
     state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
-    price_to_pay = models.DecimalField(decimal_places =2,max_digits =10 )
+    price_to_pay = models.DecimalField(decimal_places =2,max_digits =10)
     color = models.CharField(max_length=7 , blank=False , null = False)
     size = models.CharField(max_length=10 , blank= False , null = False)
     wishlist = models.ForeignKey(Wishlist, related_name='orders',on_delete=models.CASCADE, null=True)
@@ -195,3 +199,15 @@ class Request(models.Model):
     sender = models.ForeignKey(User , related_name='request_sent', on_delete= models.CASCADE)
     wishlist = models.ForeignKey(Wishlist , related_name='request',on_delete= models.CASCADE)
     is_accepted = models.BooleanField(default= False)
+
+class EasterEgg(models.Model):
+    winner = models.ForeignKey(User , related_name='easter_egg',on_delete=models.CASCADE)
+    gift = models.ForeignKey(Product , related_name='easter_egg_gift',on_delete= models.CASCADE)
+
+#easter_eggs_settings
+class Settings(models.Model): 
+    activate_gifts = models.BooleanField(default= True) #activate or not gifts system
+    qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
+
+class News(models.Model):
+    image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')

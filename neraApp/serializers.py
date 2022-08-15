@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from itertools import product
 from unicodedata import decimal
 from rest_framework import serializers
@@ -9,6 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
+import random
 
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
@@ -98,9 +100,10 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
     role = serializers.ChoiceField(choices= role_choices)
     gender = serializers.ChoiceField(choices= gender_choices)
     age = serializers.IntegerField(min_value = 10)
+    qte_purchased = serializers.IntegerField(default = 0)
     class Meta : 
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','qte_purchased','is_staff', 'is_active']
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :
@@ -214,6 +217,19 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta :
         model = Order
         fields = ['id','owner','panier','product','color','size','state','wishlist','price_to_pay','qte','created_at']
+    def create(self, validated_data):
+        owner = validated_data.get('owner')
+        print(owner.qte_purchased)
+        qte = validated_data.get('qte')
+        owner.qte_purchased += qte
+        admin_settings = Settings.objects.first()
+        if admin_settings.activate_gifts and owner.qte_purchased >= admin_settings.qte_to_win :
+            random_gift = Product.objects.order_by("?").first()
+            print(random_gift)
+            easter_egg = EasterEgg.objects.create(winner = owner , gift = random_gift)
+            owner.qte_purchased = 0
+        owner.save()
+        return super().create(validated_data)
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta :
@@ -263,7 +279,7 @@ class CodePromoSerializer(serializers.ModelSerializer):
     )
     class Meta :
         model = CodePromo
-        fields = ['id','code','percentage','type','products','subCategories','users','date_limit']
+        fields = ['id','code','influencer','percentage','type','products','subCategories','users','date_limit','used_one_time']
 
     def update(self, instance, validated_data):
         instance.code = validated_data.get('code')
@@ -278,9 +294,10 @@ class CodePromoSerializer(serializers.ModelSerializer):
             instance.products.add(product)
         users = validated_data.pop('users')
         for user in users :
-            if  user in instance.users.all():
-                error = {'message':  'code can be user only once'}
-                raise serializers.ValidationError(error) 
+            if instance.used_one_time == True :
+                if  user in instance.users.all():
+                    error = {'message':  'code can be used only once'}
+                    raise serializers.ValidationError(error) 
             instance.users.add(user)
         return instance
 
@@ -316,4 +333,18 @@ class RequestSerializer(serializers.ModelSerializer):
         if is_accepted == True :
             wishlist.users.add(sender)
         return super().update(instance, validated_data)
-    
+
+class EasterEggSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = EasterEgg
+        fields = ['id','winner','gift']
+
+class Settingserializer(serializers.ModelSerializer):
+    class Meta :
+        model = Settings
+        fields = ['id','activate_gifts','qte_to_win']
+
+class NewsSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Settings
+        fields = ['id','image']

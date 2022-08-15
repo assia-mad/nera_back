@@ -225,4 +225,24 @@ class RequestView(viewsets.ModelViewSet):
     search_fields = ['sender__id','wishlist__id','is_accepted']
     ordering_fields = ['sender','wishlist','is_accepted']
 
+class EasterEggView(viewsets.ModelViewSet):
+    queryset = EasterEgg.objects.all()
+    serializer_class = EasterEggSerializer
+     # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['winner','gift']
+    filterset_fields = ['winner','gift']
+    search_fields = ['winner__id','gift__id']
+    ordering_fields = ['winner','gift']
+
+class SettingsView(viewsets.ModelViewSet):
+    queryset = Settings.objects.all()
+    serializer_class = Settingserializer
+     # permission_classes = [IsAuthenticated]
+
+class NewsView(viewsets.ModelViewSet):
+    queryset = News.objects.all()
+    serializer_class = NewsSerializer
+     # permission_classes = [IsAuthenticated]
+    
 

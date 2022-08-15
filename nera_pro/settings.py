@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from firebase_admin import initialize_app
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+    'fcm_django',
     'neraApp',
 ]
 SITE_ID = 1
@@ -199,3 +201,5 @@ CORS_ORIGIN_WHITELIST = (
     'http://0.0.0.0:3000',
 )
 CORS_ORIGIN_ALLOW_ALL = True
+#fcm_settings
+FIREBASE_APP = initialize_app()
