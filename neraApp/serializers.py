@@ -108,7 +108,7 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :
         model = ProductType
-        fields = ['id','name','image ','created_at']
+        fields = ['id','name','image','created_at']
         lookup_fields = 'id'
 
 class CategorieSerializer(serializers.ModelSerializer):
@@ -119,7 +119,7 @@ class CategorieSerializer(serializers.ModelSerializer):
     )
     class Meta :
         model = Categorie
-        fields = ['id','name','types','image ','created_at']
+        fields = ['id','name','types','image','created_at']
 
 class SubCategorieSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
@@ -129,7 +129,7 @@ class SubCategorieSerializer(serializers.ModelSerializer):
     )
     class Meta :
         model = SubCategorie
-        fields = ['id','name','categories','image ','created_at']
+        fields = ['id','name','categories','image','created_at']
 
 class ColorSerializer(serializers.ModelSerializer):
     class Meta :
