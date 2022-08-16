@@ -95,7 +95,6 @@ class ProductView(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
     filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
@@ -138,7 +137,7 @@ class CodePromoView(viewsets.ModelViewSet):
     queryset = CodePromo.objects.filter(date_limit__gte = current)
     serializer_class = CodePromoSerializer
     pagination_class = CustomPagination
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['code','percentage','type','products','subCategories','users','date_limit']
     filterset_fields = ['code','percentage','type','products','subCategories','users','date_limit']
