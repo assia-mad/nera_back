@@ -119,7 +119,7 @@ class PanierView(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
     filterset_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
-    search_fields = ['owner__id','detailed_place','wilaya__id','commune__id','postal_code','payment_delivry__id','tel']
+    search_fields = ['owner__id','detailed_place','wilaya','commune','postal_code','payment_delivry__id','tel']
     ordering_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
 
 class FavoriteListView(viewsets.ModelViewSet):
@@ -241,6 +241,7 @@ class SettingsView(viewsets.ModelViewSet):
 
 class NewsView(viewsets.ModelViewSet):
     queryset = News.objects.all()
+    pagination_class = None
     serializer_class = NewsSerializer
      # permission_classes = [IsAuthenticated]
     
