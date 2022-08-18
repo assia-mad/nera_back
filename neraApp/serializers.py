@@ -348,3 +348,8 @@ class NewsSerializer(serializers.ModelSerializer):
     class Meta :
         model = News
         fields = ['id','image']
+
+class GiftSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Gift
+        fields = ['id','product','rarity']

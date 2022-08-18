@@ -46,6 +46,7 @@ router.register('requests',RequestView , basename= 'requests')
 router.register('easter_eggs', EasterEggView , basename = 'easter_eggs')
 router.register('settings', SettingsView , basename = 'easter_eggs_settings')
 router.register('news',NewsView , basename='news')
+router.register('gifts',GiftView , basename='gifts')
 
 urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

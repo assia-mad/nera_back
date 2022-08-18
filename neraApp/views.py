@@ -98,7 +98,7 @@ class ProductView(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
     filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
-    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
+    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','type__id','sub_categorie__id','available_colors__id','available_sizes__id','tags__id']
     ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
     
 class OrderView(viewsets.ModelViewSet):
@@ -244,5 +244,15 @@ class NewsView(viewsets.ModelViewSet):
     pagination_class = None
     serializer_class = NewsSerializer
      # permission_classes = [IsAuthenticated]
+
+class GiftView(viewsets.ModelViewSet):
+    queryset = Gift.objects.all()
+    serializer_class = GiftSerializer
+     # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['product','rarity']
+    filterset_fields = ['product','rarity']
+    search_fields = ['product__id','rarity']
+    ordering_fields = ['product','rarity']
     
 

@@ -203,5 +203,10 @@ class Settings(models.Model):
     activate_gifts = models.BooleanField(default= True) #activate or not gifts system
     qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
 
+
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
+
+class Gift(models.Model):
+    product = models.ForeignKey(Product , related_name='gift',on_delete=models.CASCADE)
+    rarity = models.DecimalField(decimal_places =2,max_digits = 3,  default= 0.00)
