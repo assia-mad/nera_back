@@ -96,10 +96,10 @@ class ProductView(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
-    filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
-    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','type__id','sub_categorie__id','available_colors__id','available_sizes__id','tags__id']
-    ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','type','sub_categorie','available_colors','available_sizes','tags']
+    filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','sub_categorie','available_colors','available_sizes','tags']
+    filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','sub_categorie','available_colors','available_sizes','tags']
+    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','gender','type__id','sub_categorie__id','available_colors__id','available_sizes__id','tags__id']
+    ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','sub_categorie','available_colors','available_sizes','tags']
     
 class OrderView(viewsets.ModelViewSet):
     queryset = Order.objects.all()

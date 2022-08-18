@@ -224,7 +224,7 @@ class OrderSerializer(serializers.ModelSerializer):
         owner.qte_purchased += qte
         admin_settings = Settings.objects.first()
         if admin_settings.activate_gifts and owner.qte_purchased >= admin_settings.qte_to_win :
-            random_gift = Product.objects.order_by("?").first()
+            random_gift = Gift.objects.order_by("?").first()
             print(random_gift)
             easter_egg = EasterEgg.objects.create(winner = owner , gift = random_gift)
             owner.qte_purchased = 0
