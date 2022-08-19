@@ -219,14 +219,13 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id','owner','panier','product','color','size','state','wishlist','price_to_pay','qte','created_at']
     def create(self, validated_data):
         owner = validated_data.get('owner')
-        print(owner.qte_purchased)
         qte = validated_data.get('qte')
         owner.qte_purchased += qte
         admin_settings = Settings.objects.first()
         if admin_settings.activate_gifts and owner.qte_purchased >= admin_settings.qte_to_win :
-            random_gift = Gift.objects.order_by("?").first()
-            print(random_gift)
-            easter_egg = EasterEgg.objects.create(winner = owner , gift = random_gift)
+            random_gift = random.choices(Gift.objects.values_list('id',flat=True).order_by('id'),Gift.objects.values_list('rarity',flat=True).order_by('id'),k=1)
+            print(random_gift[0])
+            easter_egg = EasterEgg.objects.create(winner = owner , gift = Gift.objects.get(pk = random_gift[0]))
             owner.qte_purchased = 0
         owner.save()
         return super().create(validated_data)

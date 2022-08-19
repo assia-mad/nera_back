@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
-from django.dispatch import receiver
+from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 
 
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
@@ -194,19 +193,18 @@ class Request(models.Model):
     wishlist = models.ForeignKey(Wishlist , related_name='request',on_delete= models.CASCADE)
     is_accepted = models.BooleanField(default= False)
 
+class Gift(models.Model):
+    product = models.ForeignKey(Product , related_name='gift',on_delete=models.CASCADE)
+    rarity = models.FloatField(validators=[MinValueValidator(0.0),MaxValueValidator(100)]) #the proba of gift to be win
+
 class EasterEgg(models.Model):
     winner = models.ForeignKey(User , related_name='easter_egg',on_delete=models.CASCADE)
-    gift = models.ForeignKey(Product , related_name='easter_egg_gift',on_delete= models.CASCADE)
+    gift = models.ForeignKey(Gift , related_name='easter_egg_gift',on_delete= models.CASCADE)
 
 #easter_eggs_settings
 class Settings(models.Model): 
     activate_gifts = models.BooleanField(default= True) #activate or not gifts system
     qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
 
-
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
-
-class Gift(models.Model):
-    product = models.ForeignKey(Product , related_name='gift',on_delete=models.CASCADE)
-    rarity = models.DecimalField(decimal_places =2,max_digits = 3,  default= 0.00)
