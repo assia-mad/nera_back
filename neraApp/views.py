@@ -1,9 +1,9 @@
-from django.shortcuts import render
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from rest_framework import views ,viewsets
+from rest_framework import viewsets 
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.filters import SearchFilter , OrderingFilter
 from rest_framework.parsers import JSONParser , FormParser , MultiPartParser
@@ -13,6 +13,7 @@ from .serializers import *
 from .permissions import *
 from .pagination import *
 from datetime import datetime
+from django.db.models import Count , Sum
 
 # manage users by Admin
 class ManageUsersView(viewsets.ModelViewSet):
@@ -254,5 +255,16 @@ class GiftView(viewsets.ModelViewSet):
     filterset_fields = ['product','rarity']
     search_fields = ['product__id','rarity']
     ordering_fields = ['product','rarity']
+
+class FutureOrders(APIView):
+     
+    def get(self , request , format = None):
+        products = dict()
+        products = Order.objects.filter(panier__isnull = True , wishlist__isnull = True).values('product').annotate(total = Sum('qte')).order_by('-total')
+        data = {
+            'products': products
+        }
+        return Response(data)
+    
     
 

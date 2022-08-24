@@ -63,6 +63,7 @@ urlpatterns = [
     path('user/', UserDetailsView.as_view()),
     path('google_auth/', GoolgeAuth.as_view(), 	 name='google_login'),
     path('facebook_auth/', FacebookLogin.as_view(), name='fb_login'),
+    path('futur_orders/',FutureOrders.as_view() , name='futur_orders'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

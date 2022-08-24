@@ -200,7 +200,7 @@ CORS_ORIGIN_WHITELIST = (
     'http://frontend:3000',
     'http://0.0.0.0:3000',
 )
-CORS_ORIGIN_ALLOW_ALL = True
+
 #fcm_settings
 FIREBASE_APP = initialize_app()
 # credentials = 'C:\Users\LENONVO\Desktop\nera_shop\nera-85aca-firebase-adminsdk-ldsf9-61d6c7cd8d.json'
