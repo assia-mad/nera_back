@@ -251,9 +251,18 @@ class DeliverySerializer(serializers.ModelSerializer):
         fields = ['id','company','payment_method','description']
 
 class PanierSerializer(serializers.ModelSerializer):
+    orders = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # up_orders = serializers.ListField ( child = orders , write_only = True )
     class Meta :
         model = Panier
-        fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at']
+        fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at','orders']
+    def create(self, validated_data):
+        orders = validated_data.pop('orders')
+        panier = super().create(validated_data)
+        for order in orders:
+            order.panier = panier
+            order.save()
+        return panier
 
 class PaymentConfirmSerializer(serializers.ModelSerializer):
     class Meta :

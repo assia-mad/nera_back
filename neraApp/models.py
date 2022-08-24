@@ -174,7 +174,7 @@ class Wishlist(models.Model):
 #commande
 class Order(models.Model):
     owner = models.ForeignKey(User , related_name='orders', on_delete= models.CASCADE , null=True)
-    panier = models.ForeignKey(Panier , related_name='order',on_delete= models.CASCADE , null= True)
+    panier = models.ForeignKey(Panier , related_name='orders',on_delete= models.CASCADE , null= True)
     product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
     state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
     price_to_pay = models.DecimalField(decimal_places =2,max_digits =10)
