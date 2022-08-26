@@ -8,6 +8,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticat
 from rest_framework.filters import SearchFilter , OrderingFilter
 from rest_framework.parsers import JSONParser , FormParser , MultiPartParser
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
+from django_filters import rest_framework as filters
+from django_filters import CharFilter
 from .models import *
 from .serializers import *
 from .permissions import *
@@ -113,11 +116,23 @@ class OrderView(viewsets.ModelViewSet):
     search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','created_at']
     ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
 
+class FuturPersonnelOrders(viewsets.ModelViewSet):#for every user
+    serializer_class = OrderSerializer
+    pagination_class = CustomPagination
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
+    filterset_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
+    search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','created_at']
+    ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
+    def get_queryset(self):
+            return Order.objects.filter(owner = self.request.user , panier__isnull = True , wishlist__isnull = True)
+
+
 class PanierView(viewsets.ModelViewSet):
     queryset = Panier.objects.all()
     serializer_class = PanierSerializer
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
     filterset_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
     search_fields = ['owner__id','detailed_place','wilaya','commune','postal_code','payment_delivry__id','tel']
@@ -256,7 +271,7 @@ class GiftView(viewsets.ModelViewSet):
     search_fields = ['product__id','rarity']
     ordering_fields = ['product','rarity']
 
-class FutureOrders(APIView):
+class FutureOrdersStat(APIView):
      
     def get(self , request , format = None):
         products = dict()
