@@ -108,7 +108,7 @@ class ProductView(viewsets.ModelViewSet):
 class OrderView(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    pagination_class = CustomPagination
+    pagination_class = None
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
@@ -118,7 +118,7 @@ class OrderView(viewsets.ModelViewSet):
 
 class FuturPersonnelOrders(viewsets.ModelViewSet):#for every user
     serializer_class = OrderSerializer
-    pagination_class = CustomPagination
+    pagination_class = None
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
@@ -185,10 +185,10 @@ class WilayaView(viewsets.ModelViewSet):
     serializer_class = WilayaSerializer
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['name','delivery_price']
-    filterset_fields = ['name','delivery_price']
-    search_fields = ['name','delivery_price']
-    ordering_fields = ['name','delivery_price']
+    filter_fields = ['name','delivery_price','company']
+    filterset_fields = ['name','delivery_price','company']
+    search_fields = ['name','delivery_price','company__id']
+    ordering_fields = ['name','delivery_price','company']
 
 class CommuneView(viewsets.ModelViewSet):
     queryset = Commune.objects.all()
