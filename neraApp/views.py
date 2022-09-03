@@ -223,6 +223,7 @@ class PaymentConfirmView(viewsets.ModelViewSet):
 class CompanyView(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+    pagination_class = None
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['name']
@@ -280,6 +281,3 @@ class FutureOrdersStat(APIView):
             'products': products
         }
         return Response(data)
-    
-    
-

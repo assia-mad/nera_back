@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import imp
 from pathlib import Path
+import os
 from firebase_admin import initialize_app
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -98,12 +100,12 @@ AUTHENTICATION_BACKENDS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
 
@@ -165,12 +167,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ar'
+from django.utils.translation import gettext_lazy as _
 LANGUAGES = [
-    ('de', ('German')),
-    ('en', ('English')),
-    ('fr',('French')),
-    ('ar',('Arabic')),
+    ('en', _('English')),
+    ('fr',_('French')),
+    ('ar',_('Arabic')),
 ]
 
 TIME_ZONE = 'UTC'
@@ -204,3 +206,7 @@ CORS_ORIGIN_WHITELIST = (
 #fcm_settings
 FIREBASE_APP = initialize_app()
 # credentials = 'C:\Users\LENONVO\Desktop\nera_shop\nera-85aca-firebase-adminsdk-ldsf9-61d6c7cd8d.json'
+
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR,'neraApp/locale/'),
+)

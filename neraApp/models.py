@@ -101,7 +101,6 @@ class Product(models.Model):
     tags = models.ManyToManyField(Tag , related_name='Product')
     gender = models.CharField(max_length=50, choices=product_gender_choices, default=product_gender_choices[2])
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
 
@@ -113,6 +112,7 @@ class ProductImage(models.Model):
         
 class Company(models.Model):
     name = models.CharField(max_length=150 , blank= False , null= False)
+    image = models.ImageField(upload_to = 'company_images/',blank = True , null = True , verbose_name='company_images')
     def __str__(self):
         return self.name
 
@@ -145,7 +145,8 @@ class Panier(models.Model):
     commune = models.CharField(max_length=50 , blank= False , null= False)
     postal_code = models.PositiveIntegerField()
     payment_delivry = models.ForeignKey(Delivery , related_name='Panier', on_delete= models.CASCADE)
-    state = models.CharField(max_length=50 , choices= panier_state , default= panier_state[1])
+    home_delivery = models.BooleanField(default=False)
+    state = models.CharField(max_length=50 , choices= panier_state , default= 'non payé')
     tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -184,6 +184,7 @@ class ProductSerializer(serializers.ModelSerializer):
         new_product.save()
         for uploaded_item in uploaded_data:
             new_product_image = ProductImage.objects.create(product = new_product, image = uploaded_item)
+        new_product.save()
         return new_product       
     
     def update(self, instance, validated_data):
@@ -233,7 +234,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta :
         model = Company
-        fields = ['id','name']
+        fields = ['id','name','image']
 
 class WilayaSerializer(serializers.ModelSerializer):
     class Meta :
@@ -251,11 +252,10 @@ class DeliverySerializer(serializers.ModelSerializer):
         fields = ['id','company','payment_method','description']
 
 class PanierSerializer(serializers.ModelSerializer):
-    orders = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    # up_orders = serializers.ListField ( child = orders , write_only = True )
+    orders = serializers.PrimaryKeyRelatedField(many=True, queryset=Order.objects.all())
     class Meta :
         model = Panier
-        fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at','orders']
+        fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at','orders','home_delivery']
     def create(self, validated_data):
         orders = validated_data.pop('orders')
         panier = super().create(validated_data)
