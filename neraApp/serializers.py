@@ -252,7 +252,7 @@ class DeliverySerializer(serializers.ModelSerializer):
         fields = ['id','company','payment_method','description']
 
 class PanierSerializer(serializers.ModelSerializer):
-    orders = serializers.PrimaryKeyRelatedField(many=True, queryset=Order.objects.all())
+    orders = serializers.PrimaryKeyRelatedField(many=True, queryset=Order.objects.filter(panier__isnull = True))
     class Meta :
         model = Panier
         fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at','orders','home_delivery']
