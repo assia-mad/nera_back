@@ -210,6 +210,9 @@ class ProductSerializer(serializers.ModelSerializer):
         for name in tag_names:
             tag, created = Tag.objects.get_or_create(name=name)
             tags.append(tag)
+        uploaded_data = validated_data.pop('uploaded_images')
+        for uploaded_item in uploaded_data:
+            new_product_image = ProductImage.objects.create(product = instance, image = uploaded_item)
         instance.tags.set(tags)
         instance.save() 
         return instance
