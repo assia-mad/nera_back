@@ -26,10 +26,10 @@ class ManageUsersView(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     parser_classes = [FormParser, JSONParser, MultiPartParser]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active']
-    filterset_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active']
-    search_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active']
-    ordering_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active']
+    filter_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active','language']
+    filterset_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active','language']
+    search_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active','language']
+    ordering_fields = ['first_name','last_name','email','address','tel','role','is_superuser', 'is_active','language']
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
@@ -183,6 +183,7 @@ class PaymentConfirmView(viewsets.ModelViewSet):
 class WilayaView(viewsets.ModelViewSet):
     queryset = Wilaya.objects.all()
     serializer_class = WilayaSerializer
+    pagination_class = None
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['name','delivery_price','company']
@@ -193,6 +194,7 @@ class WilayaView(viewsets.ModelViewSet):
 class CommuneView(viewsets.ModelViewSet):
     queryset = Commune.objects.all()
     serializer_class = CommuneSerializer
+    pagination_class = None
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['name','wilaya','delivery_price']
@@ -203,6 +205,7 @@ class CommuneView(viewsets.ModelViewSet):
 class DeliveryView(viewsets.ModelViewSet):
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer
+    pagination_class = None
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['company','payment_method']
@@ -272,8 +275,7 @@ class GiftView(viewsets.ModelViewSet):
     search_fields = ['product__id','rarity']
     ordering_fields = ['product','rarity']
 
-class FutureOrdersStat(APIView):
-     
+class FutureOrdersStat(APIView): 
     def get(self , request , format = None):
         products = dict()
         products = Order.objects.filter(panier__isnull = True , wishlist__isnull = True).values('product').annotate(total = Sum('qte')).order_by('-total')
@@ -281,3 +283,13 @@ class FutureOrdersStat(APIView):
             'products': products
         }
         return Response(data)
+
+class DarkModeView(viewsets.ModelViewSet):
+    queryset = DarkMode.objects.all()
+    serializer_class = DarkModeSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['user','dark_mode']
+    filterset_fields = ['user','dark_mode']
+    search_fields = ['user__id','dark_mode']
+    ordering_fields = ['user','dark_mode']
+    

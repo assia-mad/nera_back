@@ -36,6 +36,11 @@ panier_state = [
     ('payé','payé'),
     ('non payé','non payé'),
 ]
+language_choices = [
+    ('arabe','arabe'),
+    ('français','français'),
+    ('anglais','anglais'),
+]
 
 
 class User(AbstractUser):
@@ -45,6 +50,7 @@ class User(AbstractUser):
     role =  models.CharField(max_length=30 , choices=role_choices , default=role_choices[1])
     gender =  models.CharField(max_length=30 , choices=gender_choices, blank= True , null= True )
     age = models.PositiveIntegerField(blank=True , null= True)
+    language = models.CharField(max_length=10,choices=language_choices,default='anglais')
     qte_purchased = models.PositiveIntegerField(default=0)
 
 class ProductType( models.Model):
@@ -209,3 +215,7 @@ class Settings(models.Model):
 
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
+
+class DarkMode(models.Model):
+    user = models.ForeignKey(User , related_name='dark_mode',on_delete=models.CASCADE)
+    dark_mode = models.BooleanField(default=False)
