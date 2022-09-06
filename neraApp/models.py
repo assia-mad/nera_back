@@ -51,6 +51,7 @@ class User(AbstractUser):
     gender =  models.CharField(max_length=30 , choices=gender_choices, blank= True , null= True )
     age = models.PositiveIntegerField(blank=True , null= True)
     language = models.CharField(max_length=10,choices=language_choices,default='anglais')
+    dark_mode = models.BooleanField(default=False)
     qte_purchased = models.PositiveIntegerField(default=0)
 
 class ProductType( models.Model):
@@ -216,6 +217,3 @@ class Settings(models.Model):
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
 
-class DarkMode(models.Model):
-    user = models.ForeignKey(User , related_name='dark_mode',on_delete=models.CASCADE)
-    dark_mode = models.BooleanField(default=False)

@@ -15,7 +15,7 @@ import random
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','dark_mode','is_staff', 'is_active']
 
 
 class UpdateUsersByAdminSerializer(serializers.Serializer):
@@ -101,10 +101,11 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
     gender = serializers.ChoiceField(choices= gender_choices)
     age = serializers.IntegerField(min_value = 10)
     language = serializers.ChoiceField(choices=language_choices)
+    dark_mode = serializers.BooleanField(default=False)
     qte_purchased = serializers.IntegerField(default = 0)
     class Meta : 
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','qte_purchased','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','dark_mode','qte_purchased','is_staff', 'is_active']
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :
@@ -365,8 +366,3 @@ class GiftSerializer(serializers.ModelSerializer):
     class Meta :
         model = Gift
         fields = ['id','product','rarity']
-
-class DarkModeSerializer(serializers.ModelSerializer):
-    class Meta :
-        model = DarkMode
-        fields = ['id','user','dark_mode']

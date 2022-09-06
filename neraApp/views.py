@@ -284,12 +284,4 @@ class FutureOrdersStat(APIView):
         }
         return Response(data)
 
-class DarkModeView(viewsets.ModelViewSet):
-    queryset = DarkMode.objects.all()
-    serializer_class = DarkModeSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['user','dark_mode']
-    filterset_fields = ['user','dark_mode']
-    search_fields = ['user__id','dark_mode']
-    ordering_fields = ['user','dark_mode']
     
