@@ -272,7 +272,14 @@ class PanierSerializer(serializers.ModelSerializer):
 class PaymentConfirmSerializer(serializers.ModelSerializer):
     class Meta :
         model = PaymentConfirm
-        fields = ['id','transaction_code','image','panier']
+        fields = ['id','transaction_code','image','accept_payment','panier']
+
+    def update(self, instance, validated_data):
+        if validated_data.get('accept_payment'):
+            panier = validated_data.get('panier')
+            panier.state = 'payé'
+            panier.save()
+        return super().update(instance, validated_data)
  
 class CodePromoSerializer(serializers.ModelSerializer):
     products= serializers.PrimaryKeyRelatedField(
@@ -329,11 +336,6 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Tag
         fields = ['id','name']    
-
-class PaymentConfirmSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PaymentConfirm
-        fields = ['id','transaction_code','image','panier']
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta :

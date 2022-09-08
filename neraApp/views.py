@@ -175,10 +175,10 @@ class PaymentConfirmView(viewsets.ModelViewSet):
     serializer_class = PaymentConfirmSerializer
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['transaction_code','panier']
-    filterset_fields = ['transaction_code','panier']
-    search_fields = ['transaction_code','panier__id']
-    ordering_fields = ['transaction_code','panier']
+    filter_fields = ['transaction_code','panier','is_accepted']
+    filterset_fields = ['transaction_code','panier','is_accepted']
+    search_fields = ['transaction_code','panier__id','is_accepted']
+    ordering_fields = ['transaction_code','panier','is_accepted']
 
 class WilayaView(viewsets.ModelViewSet):
     queryset = Wilaya.objects.all()

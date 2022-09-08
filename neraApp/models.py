@@ -161,6 +161,7 @@ class PaymentConfirm(models.Model):
     transaction_code = models.CharField(max_length=150 , blank=True , null= True)
     image = models.ImageField(upload_to='payment_confirm/', blank = True , null = True , verbose_name='payment_confirm')
     panier = models.OneToOneField(Panier , related_name='payment_confirm', on_delete= models.CASCADE)
+    accept_payment = models.BooleanField(default=False)
 
 class CodePromo(models.Model):
     code = models.CharField(max_length=50 ,unique= True, blank= False , null= False)
