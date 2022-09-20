@@ -1,3 +1,4 @@
+from calendar import week
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
@@ -16,7 +17,9 @@ from .serializers import *
 from .permissions import *
 from .pagination import *
 from datetime import datetime
-from django.db.models import Count , Sum
+from django.db.models import Count , Sum, Avg
+from datetime import timedelta
+from django.utils import timezone
 
 # manage users by Admin
 class ManageUsersView(viewsets.ModelViewSet):
@@ -126,7 +129,7 @@ class FuturPersonnelOrders(viewsets.ModelViewSet):#for every user
     search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','created_at']
     ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
     def get_queryset(self):
-            return Order.objects.filter(owner = self.request.user , panier__isnull = True , wishlist__isnull = True)
+            return Order.objects.filter( panier__isnull = True , wishlist__isnull = True)
 
 
 class PanierView(viewsets.ModelViewSet):
@@ -278,10 +281,150 @@ class GiftView(viewsets.ModelViewSet):
 class FutureOrdersStat(APIView): 
     def get(self , request , format = None):
         products = dict()
-        products = Order.objects.filter(panier__isnull = True , wishlist__isnull = True).values('product').annotate(total = Sum('qte')).order_by('-total')
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        products = Order.objects.filter(panier__isnull = True , wishlist__isnull = True, created_at__gt = some_day_last_month ).values('product').annotate(total = Sum('qte')).order_by('-total')
         data = {
             'products': products
         }
+
         return Response(data)
 
+class SizeOrdersStat(APIView): 
+    def get(self , request , format = None):
+        sizes_last_week = dict()
+        sizes_last_month = dict()
+        sizes_last_6_month = dict()
+        sizes_last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        sizes_last_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_week).values('size').annotate(total = Sum('qte')).order_by('-total')
+        sizes_last_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_month).values('size').annotate(total = Sum('qte')).order_by('-total')
+        sizes_last_6_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_6_month).values('size').annotate(total = Sum('qte')).order_by('-total')
+        sizes_last_year= Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_year).values('size').annotate(total = Sum('qte')).order_by('-total')
+        data = {
+            'sizes_last_week': sizes_last_week,
+            'sizes_last_month':sizes_last_month,
+            'sizes_last_6_month':sizes_last_6_month,
+            'sizes_last_year':sizes_last_year,
+        }
+        
+        return Response(data)
+
+class ColorOrdersStat(APIView): 
+    def get(self , request , format = None):
+        colors_last_week = dict()
+        colors_last_month = dict()
+        colors_last_6_month = dict()
+        colors_last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        colors_last_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_week).values('color').annotate(total = Sum('qte')).order_by('-total')
+        colors_last_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_month).values('color').annotate(total = Sum('qte')).order_by('-total')
+        colors_last_6_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_6_month).values('color').annotate(total = Sum('qte')).order_by('-total')
+        colors_last_year= Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt =some_day_last_year).values('color').annotate(total = Sum('qte')).order_by('-total')
+        data = {
+            'colors_last_week': colors_last_week,
+            'colors_last_month':colors_last_month,
+            'colors_last_6_month':colors_last_6_month,
+            'colors_last_year':colors_last_year,
+        }
+        
+        return Response(data)
+
+class GenderStatisticsView(APIView):
+    def get(self, request, format=None):
+        ''' gender Statistics '''
+        féminin = dict()
+        masculin = dict()
+        total = User.objects.count()
+        féminin= (User.objects.filter(gender= 'féminin').count() *100) / total
+        masculin = (User.objects.filter(gender= 'masculin').count() *100)/ total
+        data = {
+            'féminin': féminin ,
+            'masculin':masculin,
+        }
+        return Response(data)
+
+class AgeStat(APIView): 
+    def get(self , request , format = None):
+        ages = dict()
+        users = User.objects.count()
+        ages = User.objects.filter(role = 'Admin').values('age').annotate(percentage =( Count('id')* 100)/users).order_by('-percentage') [:20]
+        data = {
+            ' ages':ages
+        }
+        
+        return Response(data)
+
+class WilayasOrderStat(APIView): 
+    def get(self , request , format = None):
+        wilayas_last_week = dict()
+        wilayas_last_month = dict()
+        wilayas_last_6_month = dict()
+        wilayas_last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        wilayas_last_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_week).values('panier__wilaya').annotate(total = Sum('qte')).order_by('-total')
+        wilayas_last_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_month).values('panier__wilaya').annotate(total = Sum('qte')).order_by('-total')
+        wilayas_last_6_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_6_month).values('panier__wilaya').annotate(total = Sum('qte')).order_by('-total')
+        wilayas_last_year= Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_year).values('panier__wilaya').annotate(total = Sum('qte')).order_by('-total')
+        data = {
+            'wilayas_last_week': wilayas_last_week,
+            'wilayas_last_month':wilayas_last_month,
+            'wilayas_last_6_month':wilayas_last_6_month,
+            'wilayas_last_year':wilayas_last_year,
+        }
+        return Response(data)
+
+class CompaniesStatisticsView(APIView):
+    def get(self, request, format=None):
+        ''' companies stats'''
+        last_week = dict()
+        last_month = dict()
+        last_6_month = dict()
+        last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        last_week = Panier.objects.filter(created_at__gt = some_day_last_week ).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_week).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_month = Panier.objects.filter(created_at__gt = some_day_last_month ).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_month).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_6_month = Panier.objects.filter(created_at__gt = some_day_last_6_month ).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_6_month).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_year = Panier.objects.filter(created_at__gt = some_day_last_year).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_year).count()).annotate(total = Count('id')).order_by('-percentage')        
+        data = {
+            'last_week_stats':last_week ,
+            'last_month_stats':last_month,
+            'last_6_month_stats':last_6_month,
+            'last_year_stats':last_year,
+        }
+        return Response(data)
+
+class ProductPurchastedView(APIView):
+    def get(self, request, format=None):
+        ''' companies stats'''
+        product_last_week = dict()
+        product_last_month = dict()
+        product_last_6_month = dict()
+        product_last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        products_last_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_week).values('product').annotate(total = Sum('qte')).order_by('-total')
+        products_last_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_month).values('product').annotate(total = Sum('qte')).order_by('-total')
+        products_last_6_month = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_6_month).values('product').annotate(total = Sum('qte')).order_by('-total')
+        products_last_year = Order.objects.filter(panier__isnull = False , wishlist__isnull = True, created_at__gt = some_day_last_year).values('product').annotate(total = Sum('qte')).order_by('-total')        
+        data = {
+            'last_week_stats':products_last_week ,
+            'last_month_stats':products_last_month,
+            'last_6_month_stats':products_last_6_month,
+            'last_year_stats':products_last_year,
+        }
+        return Response(data)
     

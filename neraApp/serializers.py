@@ -1,3 +1,4 @@
+from multiprocessing.dummy import Manager
 from django.shortcuts import get_object_or_404
 from itertools import product
 from unicodedata import decimal
@@ -212,9 +213,12 @@ class ProductSerializer(serializers.ModelSerializer):
         for name in tag_names:
             tag, created = Tag.objects.get_or_create(name=name)
             tags.append(tag)
-        uploaded_data = validated_data.pop('uploaded_images')
-        for uploaded_item in uploaded_data:
-            new_product_image = ProductImage.objects.create(product = instance, image = uploaded_item)
+        try :
+            uploaded_data = validated_data.pop('uploaded_images')
+            for uploaded_item in uploaded_data:
+                new_product_image = ProductImage.objects.create(product = instance, image = uploaded_item)
+        except :
+            pass
         instance.tags.set(tags)
         instance.save() 
         return instance
@@ -368,3 +372,11 @@ class GiftSerializer(serializers.ModelSerializer):
     class Meta :
         model = Gift
         fields = ['id','product','rarity']
+
+class FutureOrdersStatSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        iterable = data.all() if isinstance(data , models.Manager) else data
+    
+        return {
+            product : super().to_representation(Order.objects.filter(product = product)) for product in Product.objects.all()
+        }

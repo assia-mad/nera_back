@@ -7,7 +7,7 @@ num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 
 role_choices = [ 
     ('Admin','Admin'),
-    ('Client','Client'),
+    ('&','Client'),
     ('influencer','influencer'),
 ]
 order_states = [
@@ -100,7 +100,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100 , blank= False, null= False)
     regular_price = models.DecimalField(decimal_places =2,max_digits =10 )
     disc_price = models.DecimalField(decimal_places =2,max_digits = 10 , blank=True , null= True ) #  price after a discount
-    disc_per= models.DecimalField(decimal_places =2,max_digits = 3,  default= 0.00)
+    disc_per= models.DecimalField(decimal_places =2,max_digits = 4,  default= 0.00)
     type = models.ForeignKey(ProductType , related_name='product_type', on_delete=models.CASCADE)
     sub_categorie = models.ForeignKey(SubCategorie , related_name='product_sub_categorie', on_delete=models.CASCADE)
     available_colors = models.ManyToManyField(Color , related_name='product_colours')
