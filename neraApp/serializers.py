@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 import random
+from decimal import Decimal
 
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
@@ -191,8 +192,8 @@ class ProductSerializer(serializers.ModelSerializer):
         return new_product       
     
     def update(self, instance, validated_data):
-        percentage = validated_data.get('disc_per') / 100
-        regular_price = validated_data.get('regular_price')
+        percentage = Decimal(validated_data.get('disc_per') )/ 100
+        regular_price = Decimal(validated_data.get('regular_price'))
         instance.disc_price = regular_price - (regular_price * percentage)
         instance.name = validated_data.get('name', instance.name)
         instance.code = validated_data.get('code', instance.code)

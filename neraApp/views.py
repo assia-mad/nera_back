@@ -60,7 +60,7 @@ class CategorieView(viewsets.ModelViewSet):
     serializer_class = CategorieSerializer
     pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['name','types','created_at']
+    search_fields = ['name','types__id','created_at']
     ordering_fields = ['name','types','created_at']
 
 class SubCategorieView(viewsets.ModelViewSet):
