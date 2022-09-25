@@ -163,6 +163,16 @@ class CodePromoView(viewsets.ModelViewSet):
     search_fields = ['code','percentage','type','products__id','subCategories__id','users__id','date_limit']
     ordering_fields = ['code','percentage','type','products','subCategories','users','date_limit']
 
+class WishlistView(viewsets.ModelViewSet):
+    queryset = Wishlist.objects.all()
+    serializer_class = WishlistSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['owner']
+    filterset_fields = ['owner']
+    search_fields = ['owner__id']
+    ordering_fields = ['owner']
+
 class FollowedWishlistView(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
