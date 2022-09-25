@@ -163,15 +163,43 @@ class CodePromoView(viewsets.ModelViewSet):
     search_fields = ['code','percentage','type','products__id','subCategories__id','users__id','date_limit']
     ordering_fields = ['code','percentage','type','products','subCategories','users','date_limit']
 
-class WishlistView(viewsets.ModelViewSet):
-    queryset = Wishlist.objects.all()
+class FollowedWishlistView(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner']
     filterset_fields = ['owner']
     search_fields = ['owner__id']
     ordering_fields = ['owner']
+    def get_queryset(self):
+        user = self.request.user
+        return Wishlist.objects.filter(users__exact = user)
+
+class FollowerWishlistView(viewsets.ModelViewSet):
+    serializer_class = WishlistSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['owner']
+    filterset_fields = ['owner']
+    search_fields = ['owner__id']
+    ordering_fields = ['owner']
+    def get_queryset(self):
+        user = self.request.user
+        mywishlist = Wishlist.objects.get(owner=user)
+        return Wishlist.objects.filter(owner__in = mywishlist.users.all())
+
+class OtherWishlistView(viewsets.ModelViewSet):
+    serializer_class = WishlistSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['owner']
+    filterset_fields = ['owner']
+    search_fields = ['owner__id']
+    ordering_fields = ['owner']
+    def get_queryset(self):
+        user = self.request.user
+        mywishlist = Wishlist.objects.get(owner=user)
+        return Wishlist.objects.exclude(owner__in = mywishlist.users.all()).exclude(users__exact = user)
 
 class PaymentConfirmView(viewsets.ModelViewSet):
     queryset = PaymentConfirm.objects.all()

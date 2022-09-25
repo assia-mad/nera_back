@@ -192,9 +192,12 @@ class ProductSerializer(serializers.ModelSerializer):
         return new_product       
     
     def update(self, instance, validated_data):
-        percentage = Decimal(validated_data.get('disc_per') )/ 100
-        regular_price = Decimal(validated_data.get('regular_price'))
-        instance.disc_price = regular_price - (regular_price * percentage)
+        percentage = validated_data.get('disc_per') 
+        print(percentage)
+        regular_price = validated_data.get('regular_price')
+        print(regular_price)
+        discount_prix = regular_price - (regular_price * percentage)
+        instance.disc_price = discount_prix
         instance.name = validated_data.get('name', instance.name)
         instance.code = validated_data.get('code', instance.code)
         instance.regular_price = validated_data.get('regular_price', instance.regular_price)

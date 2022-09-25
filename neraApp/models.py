@@ -151,7 +151,7 @@ class Panier(models.Model):
     wilaya = models.CharField(max_length=50 , blank= False , null= False)
     commune = models.CharField(max_length=50 , blank= False , null= False)
     postal_code = models.PositiveIntegerField()
-    payment_delivry = models.ForeignKey(Delivery , related_name='Panier', on_delete= models.CASCADE)
+    payment_delivry = models.ForeignKey(Delivery , related_name='Panier', on_delete= models.CASCADE ,null=True)
     home_delivery = models.BooleanField(default=False)
     state = models.CharField(max_length=50 , choices= panier_state , default= 'non payé')
     tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
