@@ -209,7 +209,7 @@ class OtherWishlistView(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         mywishlist = Wishlist.objects.get(owner=user)
-        return Wishlist.objects.exclude(owner__in = mywishlist.users.all()).exclude(users__exact = user)
+        return Wishlist.objects.exclude(users__exact = user)
 
 class PaymentConfirmView(viewsets.ModelViewSet):
     queryset = PaymentConfirm.objects.all()
