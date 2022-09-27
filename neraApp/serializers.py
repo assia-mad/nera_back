@@ -1,7 +1,4 @@
-from multiprocessing.dummy import Manager
 from django.shortcuts import get_object_or_404
-from itertools import product
-from unicodedata import decimal
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer , UserDetailsSerializer , PasswordChangeSerializer
@@ -13,11 +10,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 import random
 from decimal import Decimal
+from django.utils import timezone
 
 class ManageusersSerializer(serializers.ModelSerializer):
     class Meta :
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','dark_mode','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','dark_mode','is_staff', 'is_active','date_joined']
 
 
 class UpdateUsersByAdminSerializer(serializers.Serializer):
@@ -77,6 +75,7 @@ class CustomRegisterSerializer(RegisterSerializer):
     age = serializers.IntegerField(min_value = 10)
     password1 = serializers.CharField( write_only=True, required=True, style={'input_type': 'password', })
     password2 = serializers.CharField( write_only=True, required=True, style={'input_type': 'password', })
+    date_joined = serializers.DateTimeField(default=timezone.now)
     def get_cleaned_data(self):
         data_dict = super().get_cleaned_data()
         data_dict['first_name'] = self.validated_data.get('first_name', '')
@@ -85,6 +84,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         data_dict['tel'] = self.validated_data.get('tel', '')
         data_dict['gender'] = self.validated_data.get('gender', '')
         data_dict['age'] = self.validated_data.get('age', '')
+        data_dict['date_joined'] = self.validated_data.get('date_joined', '')
         return data_dict
     def save(self, request):
         user = super().save(request)
@@ -107,7 +107,7 @@ class CustomUserDetailSerializer(UserDetailsSerializer):
     qte_purchased = serializers.IntegerField(default = 0)
     class Meta : 
         model = User
-        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','dark_mode','qte_purchased','is_staff', 'is_active']
+        fields = ['id','first_name','last_name','email','address','tel','image','role','gender','age','language','dark_mode','qte_purchased','is_staff', 'is_active','date_joined']
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta :

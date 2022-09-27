@@ -2,12 +2,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 
-
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 
 role_choices = [ 
     ('Admin','Admin'),
-    ('&','Client'),
+    ('Client','Client'),
     ('influencer','influencer'),
 ]
 order_states = [

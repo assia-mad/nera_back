@@ -376,24 +376,46 @@ class ColorOrdersStat(APIView):
 class GenderStatisticsView(APIView):
     def get(self, request, format=None):
         ''' gender Statistics '''
-        féminin = dict()
-        masculin = dict()
+        gender_last_week = dict()
+        gender_last_month = dict()
+        gender_last_6_month = dict()
+        gender_last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
         total = User.objects.count()
-        féminin= (User.objects.filter(gender= 'féminin').count() *100) / total
-        masculin = (User.objects.filter(gender= 'masculin').count() *100)/ total
+        gender_last_week = User.objects.filter(date_joined__gt = some_day_last_week).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_week).count())).order_by('-percentage')
+        gender_last_month = User.objects.filter(date_joined__gt = some_day_last_month).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_month)).count()).order_by('-percentage')
+        gender_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
+        gender_last_year = User.objects.filter(date_joined__gt = some_day_last_year).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_year)).count()).order_by('-percentage')
         data = {
-            'féminin': féminin ,
-            'masculin':masculin,
+            'gender_last_week':gender_last_week,
+            'gender_last_month':gender_last_month,
+            'gender_last_6_month':gender_last_6_month,
+            'gender_last_year':gender_last_year,
         }
         return Response(data)
 
 class AgeStat(APIView): 
     def get(self , request , format = None):
-        ages = dict()
-        users = User.objects.count()
-        ages = User.objects.filter(role = 'Admin').values('age').annotate(percentage =( Count('id')* 100)/users).order_by('-percentage') [:20]
+        ages_last_week = dict()
+        ages_last_month = dict()
+        ages_last_6_month = dict()
+        ages_last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        ages_last_week = User.objects.filter(date_joined__gt = some_day_last_week).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_week).count())).order_by('-percentage')
+        ages_last_month = User.objects.filter(date_joined__gt = some_day_last_month).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_month)).count()).order_by('-percentage')
+        ages_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
+        ages_last_year = User.objects.filter(date_joined__gt = some_day_last_year).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_year)).count()).order_by('-percentage')
         data = {
-            ' ages':ages
+            'ages_last_week':ages_last_week,
+            'ages_last_month':ages_last_month,
+            'ages_last_6_month':ages_last_6_month,
+            'ages_last_year':ages_last_year,
         }
         
         return Response(data)
@@ -445,11 +467,11 @@ class CompaniesStatisticsView(APIView):
 
 class ProductPurchastedView(APIView):
     def get(self, request, format=None):
-        ''' companies stats'''
-        product_last_week = dict()
-        product_last_month = dict()
-        product_last_6_month = dict()
-        product_last_year = dict()
+        ''' products stats'''
+        products_last_week = dict()
+        products_last_month = dict()
+        products_last_6_month = dict()
+        products_last_year = dict()
         some_day_last_week = timezone.now().date() - timedelta(days=7)
         some_day_last_month = timezone.now().date() - timedelta(days=30)
         some_day_last_6_month = timezone.now().date() - timedelta(days=180)
