@@ -51,6 +51,8 @@ router.register('easter_eggs', EasterEggView , basename = 'easter_eggs')
 router.register('settings', SettingsView , basename = 'easter_eggs_settings')
 router.register('news',NewsView , basename='news')
 router.register('gifts',GiftView , basename='gifts')
+router.register('visitors',VisitorView , basename='visitors')
+
 
 urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
@@ -75,6 +77,7 @@ urlpatterns = [
     path('stats_companies/',CompaniesStatisticsView.as_view(), name = 'companies_stats'),
     path('stats_age/', AgeStat.as_view() , name='age_stats'),
     path('stats_purchasted_products/', ProductPurchastedView.as_view() , name='products_stats'),
+    path('stats_visitors/', VisitorStatsView.as_view() , name='visitors_stats'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

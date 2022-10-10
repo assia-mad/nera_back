@@ -121,9 +121,15 @@ class CategorieSerializer(serializers.ModelSerializer):
         many=True,
         required=True
     )
+    cat_hits = serializers.SerializerMethodField()
+    def get_cat_hits(self, obj):
+        try:
+            return obj.hit_count.hits
+        except:
+            pass
     class Meta :
         model = Categorie
-        fields = ['id','name','types','image','created_at']
+        fields = ['id','name','types','image','created_at','cat_hits']
 
 class SubCategorieSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
@@ -384,3 +390,8 @@ class FutureOrdersStatSerializer(serializers.ListSerializer):
         return {
             product : super().to_representation(Order.objects.filter(product = product)) for product in Product.objects.all()
         }
+
+class VisitorsSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Visitor
+        fields = ['id','ip_add','last_visit']

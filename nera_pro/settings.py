@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
     'fcm_django',
+    'hitcount',
     'neraApp',
 ]
 SITE_ID = 1
@@ -107,6 +108,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'neraApp.custom_middleware.visit_middleware',
 ]
 
 ROOT_URLCONF = 'nera_pro.urls'

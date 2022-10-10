@@ -1,6 +1,10 @@
+from email.policy import default
+import imp
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
+from hitcount.views import HitCountMixin
+from django.utils import timezone
 
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 
@@ -60,7 +64,7 @@ class ProductType( models.Model):
     def __str__(self):
         return self.name
 
-class Categorie(models.Model):
+class Categorie(models.Model , HitCountMixin):
     name = models.CharField(max_length=100 , blank= False , null = False)
     types = models.ManyToManyField(ProductType , related_name='categories')
     image = models.ImageField(upload_to='categorie_images/', blank = True , null = True , verbose_name='categorie_img')
@@ -216,4 +220,9 @@ class Settings(models.Model):
 
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
+
+class Visitor(models.Model):
+    ip_add = models. GenericIPAddressField()
+    last_visit = models.DateTimeField( default= timezone.now)
+    
 

@@ -384,7 +384,6 @@ class GenderStatisticsView(APIView):
         some_day_last_month = timezone.now().date() - timedelta(days=30)
         some_day_last_6_month = timezone.now().date() - timedelta(days=180)
         some_day_last_year = timezone.now().date() - timedelta(days=365)
-        total = User.objects.count()
         gender_last_week = User.objects.filter(date_joined__gt = some_day_last_week).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_week).count())).order_by('-percentage')
         gender_last_month = User.objects.filter(date_joined__gt = some_day_last_month).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_month)).count()).order_by('-percentage')
         gender_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month).values('gender').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
@@ -487,4 +486,38 @@ class ProductPurchastedView(APIView):
             'last_year_stats':products_last_year,
         }
         return Response(data)
-    
+
+class VisitorView(viewsets.ModelViewSet):
+    queryset = Visitor.objects.all()
+    serializer_class = VisitorsSerializer
+
+class VisitorStatsView(APIView):
+    def get(self, request, format=None):
+        ''' visitors stats'''
+        this_year = datetime.now().year
+        visitor_1 = Visitor.objects.filter(last_visit__month = 1 , last_visit__year = this_year).count()
+        visitor_2 = Visitor.objects.filter(last_visit__month = 2 , last_visit__year = this_year).count()
+        visitor_3 = Visitor.objects.filter(last_visit__month = 3 , last_visit__year = this_year).count()
+        visitor_4 = Visitor.objects.filter(last_visit__month = 4 , last_visit__year = this_year).count()
+        visitor_5 = Visitor.objects.filter(last_visit__month = 5 , last_visit__year = this_year).count()
+        visitor_6 = Visitor.objects.filter(last_visit__month = 6 , last_visit__year = this_year).count()
+        visitor_7 = Visitor.objects.filter(last_visit__month = 7 , last_visit__year = this_year).count()
+        visitor_8 = Visitor.objects.filter(last_visit__month = 8 , last_visit__year = this_year).count()
+        visitor_9 = Visitor.objects.filter(last_visit__month = 9 , last_visit__year = this_year).count()
+        visitor_10 = Visitor.objects.filter(last_visit__month = 10 , last_visit__year = this_year).count()
+        visitor_11 = Visitor.objects.filter(last_visit__month = 11 , last_visit__year = this_year).count()
+        visitor_12 = Visitor.objects.filter(last_visit__month = 12 , last_visit__year = this_year).count()       
+        data = {
+            'janvier':visitor_1 ,
+            'février':visitor_2 ,
+            'mars':visitor_3 ,
+            'avril':visitor_4 ,
+            'mai':visitor_5 ,
+            'juin': visitor_6 ,
+            'juillet':visitor_7 ,
+            'aout':visitor_8 ,
+            'septembre':visitor_9 ,
+            'octobre':visitor_10 ,
+            'décembre':visitor_11 ,
+        }
+        return Response(data)
