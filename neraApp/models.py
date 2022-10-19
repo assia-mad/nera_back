@@ -3,7 +3,6 @@ import imp
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
-from hitcount.views import HitCountMixin
 from django.utils import timezone
 
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
@@ -27,8 +26,8 @@ gender_choices = [
     ('masculin','masculin'),
 ]
 payment_choices = [
-    ('main à main','main à main'),
-    ('CCP/BaridiMob','CCP/BaridiMob'),
+    ('CCP','CCP'),
+    ('BaridiMob','BaridiMob'),
 ]
 product_gender_choices = [
     ('féminin','féminin'),
@@ -50,7 +49,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=150 , blank=True , null= True)
     tel = models.CharField(max_length=10 , validators=[num_only],blank=True)
     image = models.ImageField(upload_to='profile_images/', blank = True , null = True , verbose_name='user_img')
-    role =  models.CharField(max_length=30 , choices=role_choices , default=role_choices[1])
+    role =  models.CharField(max_length=30 , choices=role_choices , default='Client')
     gender =  models.CharField(max_length=30 , choices=gender_choices, blank= True , null= True )
     age = models.PositiveIntegerField(blank=True , null= True)
     language = models.CharField(max_length=10,choices=language_choices,default='anglais')
@@ -64,7 +63,7 @@ class ProductType( models.Model):
     def __str__(self):
         return self.name
 
-class Categorie(models.Model , HitCountMixin):
+class Categorie(models.Model ):
     name = models.CharField(max_length=100 , blank= False , null = False)
     types = models.ManyToManyField(ProductType , related_name='categories')
     image = models.ImageField(upload_to='categorie_images/', blank = True , null = True , verbose_name='categorie_img')
@@ -127,37 +126,56 @@ class Company(models.Model):
         return self.name
 
 class Wilaya(models.Model):
-    company = models.ForeignKey(Company , related_name='wilaya', on_delete=models.CASCADE)
     name = models.CharField(max_length= 100 , blank= False , null= False)
-    delivery_price = models.PositiveIntegerField(blank= False , null= False) # if not livraison a domicile
     def __str__(self):
-        return self.name +' '+ self.company.nam
+        return self.name 
 
 class Commune(models.Model):
     name = models.CharField(max_length= 100 , blank= False , null= False)
-    wilaya = models.ForeignKey(Wilaya , related_name='commune', on_delete= models.CASCADE)
-    delivery_price = models.PositiveBigIntegerField(blank= False , null= False)
+    wilaya = models.ForeignKey(Wilaya , related_name = 'Commune',on_delete = models.CASCADE)
     def __str__(self):
         return self.name
 
-class Delivery(models.Model):
-    company = models.ForeignKey(Company,related_name='delivery',on_delete=models.CASCADE)
-    payment_method = models.CharField(max_length=150 , choices= payment_choices , default= payment_choices[0])
-    description = models.TextField(blank= True , null= True)
-    def __str__(self):
-        return self.company.name +','+ self.payment_method
-    
+class StopDesk(models.Model):
+    name = models.CharField(max_length= 100 , blank= False , null= False)
+    delivery_price = models.PositiveIntegerField(blank= False , null= False)
+    company = models.ForeignKey(Company , related_name = 'stop_desks', on_delete = models.CASCADE)
+    wilaya = models.ForeignKey(Wilaya , related_name = 'stop_desks',on_delete = models.CASCADE)
+    def __str__(self) :
+        return self.name
 
+# class Wilaya_company(models.Model):
+#     company = models.ForeignKey(Company , related_name='wilaya', on_delete=models.CASCADE)
+#     wilaya = models.ForeignKey(Wilaya , related_name = 'Wilaya_company',on_delete = models.CASCADE)
+#     def __str__(self):
+#         return self.name +' '+ self.company.name
+
+class CommuneCompany(models.Model):
+    commune = models.ForeignKey(Commune, related_name = 'company_commune', on_delete = models.CASCADE)
+    company = models.ForeignKey(Company , related_name = 'commune_company', on_delete = models.CASCADE)
+    delivery_price = models.PositiveIntegerField(blank= False , null= False)
+    def __str__(self):
+        return self.company.name +' '+ self.commune.name
+
+# class Delivery(models.Model):
+#     company = models.ForeignKey(Company,related_name='delivery',on_delete=models.CASCADE)
+#     payment_method = models.CharField(max_length=150 , choices= payment_choices , default= payment_choices[0])
+#     description = models.TextField(blank= True , null= True)
+#     def __str__(self):
+#         return self.company.name +','+ self.payment_method
+    
 class Panier(models.Model):
-    owner = models.ForeignKey(User , related_name='panier',on_delete= models.CASCADE)
+    owner = models.ForeignKey(User, related_name='panier',on_delete= models.CASCADE)
     detailed_place = models.CharField(max_length=150 , blank= False , null= False)
-    wilaya = models.CharField(max_length=50 , blank= False , null= False)
-    commune = models.CharField(max_length=50 , blank= False , null= False)
+    wilaya = models.ForeignKey(Wilaya, related_name ='panier', on_delete = models.CASCADE)
+    commune = models.ForeignKey(Commune, related_name = 'panier', on_delete = models.CASCADE)
     postal_code = models.PositiveIntegerField()
-    payment_delivry = models.ForeignKey(Delivery , related_name='Panier', on_delete= models.CASCADE ,null=True)
-    home_delivery = models.BooleanField(default=False)
+    advanced_payment = models.CharField(max_length=30 , choices= payment_choices, null = True , blank = True)
+    desk_delivery = models.ForeignKey(StopDesk, related_name = 'panier' , on_delete = models.CASCADE , null = True)
+    commune_delivery = models.ForeignKey(CommuneCompany, related_name = 'panier' , on_delete = models.CASCADE , null = True)
     state = models.CharField(max_length=50 , choices= panier_state , default= 'non payé')
     tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
+    total_price = models.DecimalField(decimal_places =2,max_digits =10, default=00.0 )
     created_at = models.DateTimeField(auto_now_add=True)
 
 class PaymentConfirm(models.Model):
@@ -183,7 +201,6 @@ class Wishlist(models.Model):
     owner = models.OneToOneField(User , related_name='wishlist', on_delete= models.CASCADE)
     users = models.ManyToManyField(User , related_name='whishlists')
 
-#commande
 class Order(models.Model):
     owner = models.ForeignKey(User , related_name='orders', on_delete= models.CASCADE , null=True)
     panier = models.ForeignKey(Panier , related_name='orders',on_delete= models.CASCADE , null= True)
@@ -194,6 +211,7 @@ class Order(models.Model):
     size = models.CharField(max_length=10 , blank= False , null = False)
     wishlist = models.ForeignKey(Wishlist, related_name='orders',on_delete=models.CASCADE, null=True)
     qte = models.PositiveIntegerField(default = 1)
+    code_promo = models.ForeignKey(CodePromo, related_name = 'orders',on_delete = models.CASCADE ,null = True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class FavoriteList(models.Model):
@@ -217,6 +235,7 @@ class EasterEgg(models.Model):
 class Settings(models.Model): 
     activate_gifts = models.BooleanField(default= True) #activate or not gifts system
     qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
+    poste_delivery_price = models.PositiveIntegerField(default = 0) #the price of delivery by poste 
 
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
@@ -225,4 +244,3 @@ class Visitor(models.Model):
     ip_add = models. GenericIPAddressField()
     last_visit = models.DateTimeField( default= timezone.now)
     
-

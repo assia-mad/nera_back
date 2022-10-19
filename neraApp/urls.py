@@ -43,7 +43,8 @@ router.register('follower_wish',FollowerWishlistView , basename='follower_wishli
 router.register('other_wish', OtherWishlistView , basename='other_wishlists')
 router.register('wilayas',WilayaView , basename='wilayas')
 router.register('communes',CommuneView , basename='communes')
-router.register('delivery',DeliveryView , basename='delivery')
+router.register('communes_company',CommuneCompanyView , basename='communes_company')
+router.register('stop_desks', StopDeskView , basename='stop_desks')
 router.register('payment_confirm', PaymentConfirmView , basename='payment_confirm')
 router.register('companies',CompanyView , basename='companies')
 router.register('requests',RequestView , basename= 'requests')
@@ -78,6 +79,8 @@ urlpatterns = [
     path('stats_age/', AgeStat.as_view() , name='age_stats'),
     path('stats_purchasted_products/', ProductPurchastedView.as_view() , name='products_stats'),
     path('stats_visitors/', VisitorStatsView.as_view() , name='visitors_stats'),
+    path('stats_codepromo/', CodePromoStats.as_view() , name='code_promo_stats'),
+    path('stats_codeInfluencer/', CodeInfluencerStats.as_view() , name='code_influencer_stats'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

@@ -236,7 +236,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta :
         model = Order
-        fields = ['id','owner','panier','product','color','size','state','wishlist','price_to_pay','qte','created_at']
+        fields = ['id','owner','panier','product','color','size','state','wishlist','price_to_pay','qte','code_promo','created_at']
     def create(self, validated_data):
         owner = validated_data.get('owner')
         qte = validated_data.get('qte')
@@ -258,23 +258,28 @@ class CompanySerializer(serializers.ModelSerializer):
 class WilayaSerializer(serializers.ModelSerializer):
     class Meta :
         model = Wilaya
-        fields = ['id','company','name','delivery_price']
+        fields = ['id','name']
 
 class CommuneSerializer(serializers.ModelSerializer):
     class Meta :
         model = Commune
-        fields = ['id','name','wilaya','delivery_price']
+        fields = ['id','name','wilaya']
 
-class DeliverySerializer(serializers.ModelSerializer):
+class StopDeskSerializer(serializers.ModelSerializer):
     class Meta :
-        model = Delivery
-        fields = ['id','company','payment_method','description']
+        model = StopDesk
+        fields = ['id','name','company','wilaya','delivery_price']
+
+class CommuneCompanySerializer(serializers.ModelSerializer):
+    class Meta :
+        model = CommuneCompany
+        fields = ['id','commune','company','delivery_price']
 
 class PanierSerializer(serializers.ModelSerializer):
     orders = serializers.PrimaryKeyRelatedField(many=True, queryset=Order.objects.filter(panier__isnull = True))
     class Meta :
         model = Panier
-        fields = ['id','owner','wilaya','commune','detailed_place','postal_code','payment_delivry','tel','state','created_at','orders','home_delivery']
+        fields = ['id','owner','wilaya','commune','tel','detailed_place','postal_code','advanced_payment','desk_delivery','commune_delivery','state','created_at','total_price','orders']
     def create(self, validated_data):
         orders = validated_data.pop('orders')
         panier = super().create(validated_data)

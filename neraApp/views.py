@@ -20,6 +20,7 @@ from datetime import datetime
 from django.db.models import Count , Sum, Avg
 from datetime import timedelta
 from django.utils import timezone
+from hitcount.views import HitCountMixin
 
 # manage users by Admin
 class ManageUsersView(viewsets.ModelViewSet):
@@ -55,7 +56,7 @@ class ProductTypeView(viewsets.ModelViewSet):
     search_fields = ['name','created_at']
     ordering_fields = ['name','created_at']
 
-class CategorieView(viewsets.ModelViewSet):
+class CategorieView(viewsets.ModelViewSet, HitCountMixin):
     queryset = Categorie.objects.all()
     serializer_class = CategorieSerializer
     pagination_class = None
@@ -114,10 +115,10 @@ class OrderView(viewsets.ModelViewSet):
     pagination_class = None
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
-    filterset_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
-    search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','created_at']
-    ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','created_at']
+    filter_fields = ['owner','panier','product','color','size','state','wishlist','qte','code_promo','created_at']
+    filterset_fields = ['owner','panier','product','color','size','state','wishlist','qte','code_promo','created_at']
+    search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','code_promo','created_at']
+    ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','code_promo','created_at']
 
 class FuturPersonnelOrders(viewsets.ModelViewSet):#for every user
     serializer_class = OrderSerializer
@@ -136,10 +137,10 @@ class PanierView(viewsets.ModelViewSet):
     queryset = Panier.objects.all()
     serializer_class = PanierSerializer
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
-    filter_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
-    filterset_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
-    search_fields = ['owner__id','detailed_place','wilaya','commune','postal_code','payment_delivry__id','tel']
-    ordering_fields = ['owner','detailed_place','wilaya','commune','postal_code','payment_delivry','tel']
+    filter_fields = ['owner','wilaya','commune','tel','detailed_place','postal_code','desk_delivery','commune_delivery','state','created_at','advanced_payment']
+    filterset_fields = ['owner','wilaya','commune','tel','detailed_place','postal_code','desk_delivery','commune_delivery','state','created_at','advanced_payment']
+    search_fields = ['owner','wilaya__id','commune__id','tel','detailed_place','postal_code','desk_delivery__id','commune_delivery__id','state','created_at','advanced_payment']
+    ordering_fields = ['owner','wilaya','commune','tel','detailed_place','postal_code','desk_delivery','commune_delivery','state','created_at','advanced_payment']
 
 class FavoriteListView(viewsets.ModelViewSet):
     queryset = FavoriteList.objects.all()
@@ -216,10 +217,10 @@ class PaymentConfirmView(viewsets.ModelViewSet):
     serializer_class = PaymentConfirmSerializer
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['transaction_code','panier','is_accepted']
-    filterset_fields = ['transaction_code','panier','is_accepted']
-    search_fields = ['transaction_code','panier__id','is_accepted']
-    ordering_fields = ['transaction_code','panier','is_accepted']
+    filter_fields = ['transaction_code','panier','accept_payment ']
+    filterset_fields = ['transaction_code','panier','accept_payment ']
+    search_fields = ['transaction_code','panier__id','accept_payment ']
+    ordering_fields = ['transaction_code','panier','accept_payment ']
 
 class WilayaView(viewsets.ModelViewSet):
     queryset = Wilaya.objects.all()
@@ -227,10 +228,10 @@ class WilayaView(viewsets.ModelViewSet):
     pagination_class = None
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['name','delivery_price','company']
-    filterset_fields = ['name','delivery_price','company']
-    search_fields = ['name','delivery_price','company__id']
-    ordering_fields = ['name','delivery_price','company']
+    filter_fields = ['name']
+    filterset_fields = ['name']
+    search_fields = ['name']
+    ordering_fields = ['name']
 
 class CommuneView(viewsets.ModelViewSet):
     queryset = Commune.objects.all()
@@ -238,31 +239,30 @@ class CommuneView(viewsets.ModelViewSet):
     pagination_class = None
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['name','wilaya','delivery_price']
-    filterset_fields = ['name','wilaya','delivery_price']
-    search_fields = ['name','wilaya__id','delivery_price']
-    ordering_fields = ['name','wilaya','delivery_price']
+    filter_fields = ['name','wilaya']
+    filterset_fields = ['name','wilaya']
+    search_fields = ['name','wilaya__id']
+    ordering_fields = ['name','wilaya']
 
-class DeliveryView(viewsets.ModelViewSet):
-    queryset = Delivery.objects.all()
-    serializer_class = DeliverySerializer
-    pagination_class = None
+class CommuneCompanyView(viewsets.ModelViewSet):
+    queryset = CommuneCompany.objects.all()
+    serializer_class = CommuneCompanySerializer
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['company','payment_method']
-    filterset_fields = ['company','payment_method']
-    search_fields = ['company__id','payment_method']
-    ordering_fields = ['company','payment_method']
+    filter_fields = ['commune','company','delivery_price']
+    filterset_fields = ['commune','company','delivery_price']
+    search_fields = ['commune__id','company__id','delivery_price']
+    ordering_fields = ['commune','company','delivery_price']
 
-class PaymentConfirmView(viewsets.ModelViewSet):
-    queryset = PaymentConfirm.objects.all()
-    serializer_class = PaymentConfirmSerializer
+class StopDeskView(viewsets.ModelViewSet):
+    queryset = StopDesk.objects.all()
+    serializer_class = StopDeskSerializer
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['transaction_code','panier']
-    filterset_fields = ['transaction_code','panier']
-    search_fields = ['transaction_code','panier__id']
-    ordering_fields = ['transaction_code','panier']
+    filter_fields = ['name','company','wilaya','delivery_price']
+    filterset_fields = ['name','company','wilaya','delivery_price']
+    search_fields = ['name','company__id','wilaya__id','delivery_price']
+    ordering_fields = ['name','company','wilaya','delivery_price']
 
 class CompanyView(viewsets.ModelViewSet):
     queryset = Company.objects.all()
@@ -518,6 +518,55 @@ class VisitorStatsView(APIView):
             'aout':visitor_8 ,
             'septembre':visitor_9 ,
             'octobre':visitor_10 ,
-            'décembre':visitor_11 ,
+            'novembre':visitor_11 ,
+            'décembre':visitor_12,
         }
         return Response(data)
+
+class CodePromoStats(APIView):
+    def get(self, request, format=None):
+        ''' codepromo stats per month '''
+        codes_last_week = dict()
+        codes_third_week = dict()
+        codes_second_week = dict()
+        codes_first_week = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_third_week = timezone.now().date() - timedelta(days=14)
+        some_day_second_week = timezone.now().date() - timedelta(days=21)
+        some_day_first_week = timezone.now().date() - timedelta(days=28)
+        codes_last_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =True, created_at__gte = some_day_last_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')
+        codes_third_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =True, created_at__lt = some_day_last_week,created_at__gte = some_day_third_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')
+        codes_second_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =True,created_at__lt = some_day_third_week ,created_at__gte = some_day_second_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')
+        codes_first_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =True, created_at__lt = some_day_second_week, created_at__gte = some_day_first_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')        
+        data = {
+            'last_week_stats':codes_last_week ,
+            'third_week_stats':codes_third_week,
+            'second_week_stats':codes_second_week,
+            'first_week_stats':codes_first_week,
+        }
+        return Response(data)
+
+class CodeInfluencerStats(APIView):
+    def get(self, request, format=None):
+        ''' codeinfluencer stats per month '''
+        codes_last_week = dict()
+        codes_third_week = dict()
+        codes_second_week = dict()
+        codes_first_week = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_third_week = timezone.now().date() - timedelta(days=14)
+        some_day_second_week = timezone.now().date() - timedelta(days=21)
+        some_day_first_week = timezone.now().date() - timedelta(days=28)
+        codes_last_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =False, created_at__gte = some_day_last_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')
+        codes_third_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =False, created_at__lt = some_day_last_week,created_at__gte = some_day_third_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')
+        codes_second_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =False,created_at__lt = some_day_third_week ,created_at__gte = some_day_second_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')
+        codes_first_week = Order.objects.filter(panier__isnull = False , wishlist__isnull = True,code_promo__isnull = False,code_promo__influencer__isnull =False, created_at__lt = some_day_second_week, created_at__gte = some_day_first_week).values('code_promo').annotate(total = Sum('qte')).order_by('-total')        
+        data = {
+            'last_week_stats':codes_last_week ,
+            'third_week_stats':codes_third_week,
+            'second_week_stats':codes_second_week,
+            'first_week_stats':codes_first_week,
+        }
+        return Response(data)
+
+
