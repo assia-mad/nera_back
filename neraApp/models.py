@@ -235,7 +235,9 @@ class EasterEgg(models.Model):
 class Settings(models.Model): 
     activate_gifts = models.BooleanField(default= True) #activate or not gifts system
     qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
-    poste_delivery_price = models.PositiveIntegerField(default = 0) #the price of delivery by poste 
+    poste_delivery_price = models.PositiveIntegerField(default = 0) #the price of delivery by poste
+    ccp_code = models.CharField(max_length = 15)
+    ccp_cle = models.CharField(max_length = 4) 
 
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')

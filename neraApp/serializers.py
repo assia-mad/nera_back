@@ -376,7 +376,7 @@ class EasterEggSerializer(serializers.ModelSerializer):
 class Settingserializer(serializers.ModelSerializer):
     class Meta :
         model = Settings
-        fields = ['id','activate_gifts','qte_to_win']
+        fields = ['id','activate_gifts','qte_to_win','poste_delivery_price','ccp_code','ccp_cle']
 
 class NewsSerializer(serializers.ModelSerializer):
     class Meta :
