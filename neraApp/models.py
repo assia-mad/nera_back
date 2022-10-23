@@ -1,9 +1,9 @@
 from email.policy import default
-import imp
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.utils import timezone
+import django_filters
 
 num_only = RegexValidator(r'^[0-9]*$','only numbers are allowed')
 

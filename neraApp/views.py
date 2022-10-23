@@ -244,9 +244,16 @@ class CommuneView(viewsets.ModelViewSet):
     search_fields = ['name','wilaya__id']
     ordering_fields = ['name','wilaya']
 
+class CommuneCompanyFilter(django_filters.FilterSet):
+    wilaya = django_filters.CharFilter(name="wilaya__name")
+    class Meta:
+        model = CommuneCompany
+        fields = ['commune','company','delivery_price', 'wilaya']
+
 class CommuneCompanyView(viewsets.ModelViewSet):
     queryset = CommuneCompany.objects.all()
     serializer_class = CommuneCompanySerializer
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['commune','company','delivery_price']
@@ -257,6 +264,7 @@ class CommuneCompanyView(viewsets.ModelViewSet):
 class StopDeskView(viewsets.ModelViewSet):
     queryset = StopDesk.objects.all()
     serializer_class = StopDeskSerializer
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['name','company','wilaya','delivery_price']
