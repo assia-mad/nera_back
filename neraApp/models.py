@@ -144,25 +144,12 @@ class StopDesk(models.Model):
     def __str__(self) :
         return self.name
 
-# class Wilaya_company(models.Model):
-#     company = models.ForeignKey(Company , related_name='wilaya', on_delete=models.CASCADE)
-#     wilaya = models.ForeignKey(Wilaya , related_name = 'Wilaya_company',on_delete = models.CASCADE)
-#     def __str__(self):
-#         return self.name +' '+ self.company.name
-
 class CommuneCompany(models.Model):
     commune = models.ForeignKey(Commune, related_name = 'company_commune', on_delete = models.CASCADE)
     company = models.ForeignKey(Company , related_name = 'commune_company', on_delete = models.CASCADE)
     delivery_price = models.PositiveIntegerField(blank= False , null= False)
     def __str__(self):
         return self.company.name +' '+ self.commune.name
-
-# class Delivery(models.Model):
-#     company = models.ForeignKey(Company,related_name='delivery',on_delete=models.CASCADE)
-#     payment_method = models.CharField(max_length=150 , choices= payment_choices , default= payment_choices[0])
-#     description = models.TextField(blank= True , null= True)
-#     def __str__(self):
-#         return self.company.name +','+ self.payment_method
     
 class Panier(models.Model):
     owner = models.ForeignKey(User, related_name='panier',on_delete= models.CASCADE)
@@ -236,8 +223,8 @@ class Settings(models.Model):
     activate_gifts = models.BooleanField(default= True) #activate or not gifts system
     qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
     poste_delivery_price = models.PositiveIntegerField(default = 0) #the price of delivery by poste
-    ccp_code = models.CharField(max_length = 15)
-    ccp_cle = models.CharField(max_length = 4) 
+    ccp_code = models.CharField(null = True , blank = True,max_length = 15)
+    ccp_cle = models.CharField(null = True , blank = True,max_length = 4) 
 
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')

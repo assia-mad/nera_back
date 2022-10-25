@@ -3,7 +3,7 @@ from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from rest_framework import viewsets 
+from rest_framework import viewsets , generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly , IsAuthenticated
 from rest_framework.filters import SearchFilter , OrderingFilter
@@ -244,22 +244,16 @@ class CommuneView(viewsets.ModelViewSet):
     search_fields = ['name','wilaya__id']
     ordering_fields = ['name','wilaya']
 
-class CommuneCompanyFilter(django_filters.FilterSet):
-    wilaya = django_filters.CharFilter(name="wilaya__name")
-    class Meta:
-        model = CommuneCompany
-        fields = ['commune','company','delivery_price', 'wilaya']
-
 class CommuneCompanyView(viewsets.ModelViewSet):
     queryset = CommuneCompany.objects.all()
     serializer_class = CommuneCompanySerializer
     pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['commune','company','delivery_price']
-    filterset_fields = ['commune','company','delivery_price']
-    search_fields = ['commune__id','company__id','delivery_price']
-    ordering_fields = ['commune','company','delivery_price']
+    filter_fields = ['commune','company','delivery_price','commune__wilaya']
+    filterset_fields = ['commune','company','delivery_price','commune__wilaya']
+    search_fields = ['commune__id','company__id','delivery_price','commune__wilaya__id']
+    ordering_fields = ['commune','company','delivery_price','commune__wilaya']
 
 class StopDeskView(viewsets.ModelViewSet):
     queryset = StopDesk.objects.all()
