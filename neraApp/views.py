@@ -21,6 +21,8 @@ from django.db.models import Count , Sum, Avg
 from datetime import timedelta
 from django.utils import timezone
 from hitcount.views import HitCountMixin
+from itertools import chain
+from django.core.cache import cache
 
 # manage users by Admin
 class ManageUsersView(viewsets.ModelViewSet):
@@ -91,6 +93,7 @@ class SizeView(viewsets.ModelViewSet):
 class ProductImageView(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ImageSerializer
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     pagination_class = None
@@ -103,11 +106,24 @@ class ProductView(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','sub_categorie','available_colors','available_sizes','tags']
-    filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','sub_categorie','available_colors','available_sizes','tags']
-    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','gender','type__id','sub_categorie__id','available_colors__id','available_sizes__id','tags__id']
-    ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','sub_categorie','available_colors','available_sizes','tags']
+    filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','categorie','sub_categorie','available_colors','available_sizes','tags']
+    filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','categorie','sub_categorie','available_colors','available_sizes','tags']
+    search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','gender','type__id','categorie__id','sub_categorie__id','available_colors__id','available_sizes__id','tags__id']
+    ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','categorie','sub_categorie','available_colors','available_sizes','tags']
+    def get_object(self):
+        product = super().get_object()
+        user = self.request.user
+        cached_data = cache.get(user.pk)
+        if cached_data is None:
+            cached_data = [product.sub_categorie]
+        else :
+            if not (product.sub_categorie in cached_data):
+                cached_data.append(product.sub_categorie)
+        cache.set(user.pk , cached_data , 3600*60)
+        print(cache.get(user.pk))
+        return product
     
 class OrderView(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -132,10 +148,10 @@ class FuturPersonnelOrders(viewsets.ModelViewSet):#for every user
     def get_queryset(self):
             return Order.objects.filter( panier__isnull = True , wishlist__isnull = True)
 
-
 class PanierView(viewsets.ModelViewSet):
     queryset = Panier.objects.all()
     serializer_class = PanierSerializer
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated , AdminOrownerPermission]
     filter_fields = ['owner','wilaya','commune','tel','detailed_place','postal_code','desk_delivery','commune_delivery','state','created_at','advanced_payment']
     filterset_fields = ['owner','wilaya','commune','tel','detailed_place','postal_code','desk_delivery','commune_delivery','state','created_at','advanced_payment']
@@ -145,6 +161,7 @@ class PanierView(viewsets.ModelViewSet):
 class FavoriteListView(viewsets.ModelViewSet):
     queryset = FavoriteList.objects.all()
     serializer_class = FavoritListSerializer
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticatedAndOwner]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','products']
@@ -152,9 +169,21 @@ class FavoriteListView(viewsets.ModelViewSet):
     search_fields = ['owner__id','products']
     ordering_fields = ['owner','products']
 
+class DiscountView(viewsets.ModelViewSet):
+    current = datetime.now()
+    queryset = Discount.objects.filter(date_limit__gte = current, date_debut__lte = current)
+    serializer_class = DiscountSerializer
+    pagination_class = CustomPagination
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['percentage','products','subCategories','date_debut','date_limit']
+    filterset_fields = ['percentage','products','subCategories','date_debut','date_limit']
+    search_fields = ['percentage','products','subCategories','date_debut','date_limit']
+    ordering_fields = ['percentage','products','subCategories','date_debut','date_limit']
+
 class CodePromoView(viewsets.ModelViewSet):
     current = datetime.now()
-    queryset = CodePromo.objects.filter(date_limit__gte = current)
+    queryset = CodePromo.objects.filter(date_limit__gte = current, date_debut__lte = current)
     serializer_class = CodePromoSerializer
     pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
@@ -168,6 +197,7 @@ class WishlistView(viewsets.ModelViewSet):
     queryset = Wishlist.objects.all()
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner']
     filterset_fields = ['owner']
@@ -177,6 +207,7 @@ class WishlistView(viewsets.ModelViewSet):
 class FollowedWishlistView(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner']
     filterset_fields = ['owner']
@@ -189,6 +220,7 @@ class FollowedWishlistView(viewsets.ModelViewSet):
 class FollowerWishlistView(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner']
     filterset_fields = ['owner']
@@ -202,6 +234,7 @@ class FollowerWishlistView(viewsets.ModelViewSet):
 class OtherWishlistView(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner']
     filterset_fields = ['owner']
@@ -216,6 +249,7 @@ class PaymentConfirmView(viewsets.ModelViewSet):
     queryset = PaymentConfirm.objects.all()
     serializer_class = PaymentConfirmSerializer
     # permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['transaction_code','panier','accept_payment']
     filterset_fields = ['transaction_code','panier','accept_payment']
@@ -281,6 +315,7 @@ class RequestView(viewsets.ModelViewSet):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
      # permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['sender','wishlist','is_accepted']
     filterset_fields = ['sender','wishlist','is_accepted']
@@ -291,6 +326,7 @@ class EasterEggView(viewsets.ModelViewSet):
     queryset = EasterEgg.objects.all()
     serializer_class = EasterEggSerializer
      # permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['winner','gift']
     filterset_fields = ['winner','gift']
@@ -312,6 +348,7 @@ class GiftView(viewsets.ModelViewSet):
     queryset = Gift.objects.all()
     serializer_class = GiftSerializer
      # permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['product','rarity']
     filterset_fields = ['product','rarity']
@@ -408,10 +445,10 @@ class AgeStat(APIView):
         some_day_last_month = timezone.now().date() - timedelta(days=30)
         some_day_last_6_month = timezone.now().date() - timedelta(days=180)
         some_day_last_year = timezone.now().date() - timedelta(days=365)
-        ages_last_week = User.objects.filter(date_joined__gt = some_day_last_week).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_week).count())).order_by('-percentage')
-        ages_last_month = User.objects.filter(date_joined__gt = some_day_last_month).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_month)).count()).order_by('-percentage')
-        ages_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
-        ages_last_year = User.objects.filter(date_joined__gt = some_day_last_year).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_year)).count()).order_by('-percentage')
+        ages_last_week = User.objects.filter(date_joined__gt = some_day_last_week , age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_week).count())).order_by('-percentage')
+        ages_last_month = User.objects.filter(date_joined__gt = some_day_last_month ,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_month)).count()).order_by('-percentage')
+        ages_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
+        ages_last_year = User.objects.filter(date_joined__gt = some_day_last_year,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_year)).count()).order_by('-percentage')
         data = {
             'ages_last_week':ages_last_week,
             'ages_last_month':ages_last_month,
@@ -443,7 +480,7 @@ class WilayasOrderStat(APIView):
         }
         return Response(data)
 
-class CompaniesStatisticsView(APIView):
+class CompaniesDeskStatisticsView(APIView):
     def get(self, request, format=None):
         ''' companies stats'''
         last_week = dict()
@@ -454,10 +491,33 @@ class CompaniesStatisticsView(APIView):
         some_day_last_month = timezone.now().date() - timedelta(days=30)
         some_day_last_6_month = timezone.now().date() - timedelta(days=180)
         some_day_last_year = timezone.now().date() - timedelta(days=365)
-        last_week = Panier.objects.filter(created_at__gt = some_day_last_week ).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_week).count()).annotate(total = Count('id')).order_by('-percentage')
-        last_month = Panier.objects.filter(created_at__gt = some_day_last_month ).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_month).count()).annotate(total = Count('id')).order_by('-percentage')
-        last_6_month = Panier.objects.filter(created_at__gt = some_day_last_6_month ).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_6_month).count()).annotate(total = Count('id')).order_by('-percentage')
-        last_year = Panier.objects.filter(created_at__gt = some_day_last_year).values('payment_delivry__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_year).count()).annotate(total = Count('id')).order_by('-percentage')        
+        last_week = Panier.objects.filter(created_at__gt = some_day_last_week,desk_delivery__isnull = False).values('desk_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_week,desk_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_month = Panier.objects.filter(created_at__gt = some_day_last_month,desk_delivery__isnull = False).values('desk_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_month,desk_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_6_month = Panier.objects.filter(created_at__gt = some_day_last_6_month,desk_delivery__isnull = False).values('desk_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_6_month,desk_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_year = Panier.objects.filter(created_at__gt = some_day_last_year,desk_delivery__isnull = False).values('desk_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_year,desk_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        data = {
+            'last_week_stats':last_week ,
+            'last_month_stats':last_month,
+            'last_6_month_stats':last_6_month,
+            'last_year_stats':last_year,
+        }
+        return Response(data)
+
+class CompanieshomeStatisticsView(APIView):
+    def get(self, request, format=None):
+        ''' companies stats'''
+        last_week = dict()
+        last_month = dict()
+        last_6_month = dict()
+        last_year = dict()
+        some_day_last_week = timezone.now().date() - timedelta(days=7)
+        some_day_last_month = timezone.now().date() - timedelta(days=30)
+        some_day_last_6_month = timezone.now().date() - timedelta(days=180)
+        some_day_last_year = timezone.now().date() - timedelta(days=365)
+        last_week = Panier.objects.filter(created_at__gt = some_day_last_week,commune_delivery__isnull = False).values('commune_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_week,commune_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_month = Panier.objects.filter(created_at__gt = some_day_last_month,commune_delivery__isnull = False).values('commune_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_month,commune_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_6_month = Panier.objects.filter(created_at__gt = some_day_last_6_month,commune_delivery__isnull = False).values('commune_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_6_month,commune_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
+        last_year = Panier.objects.filter(created_at__gt = some_day_last_year,commune_delivery__isnull = False).values('commune_delivery__company__name').annotate(percentage =(Count('id')*100)/Panier.objects.filter(created_at__gt = some_day_last_year,commune_delivery__isnull = False).count()).annotate(total = Count('id')).order_by('-percentage')
         data = {
             'last_week_stats':last_week ,
             'last_month_stats':last_month,
@@ -571,4 +631,52 @@ class CodeInfluencerStats(APIView):
         }
         return Response(data)
 
+class SuggestedProductsView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+    def get_queryset(self):
+        orders_list = Order.objects.order_by('created_at').filter(owner = self.request.user)[:15]
+        favorites = FavoriteList.objects.get(owner = self.request.user).products
+        visited_sub_categories = cache.get(self.request.user.pk)
+        if all(v is not None for v in [orders_list, favorites, visited_sub_categories]):
+            return Product.objects.all().order_by('?')
+        else :
+            suggestes_sub_categories = [] #suggest based on them
+            purchasted_products = [] #to eleminate them from suggestions
+            suggested_tags = [] # suggest products by tags too
+            for sub_categorie in visited_sub_categories :
+                if not (sub_categorie) in suggestes_sub_categories :
+                    suggestes_sub_categories.append(sub_categorie)
+            for order in orders_list:
+                purchasted_products.append(order.product.pk)
+                sub_categorie = order.product.sub_categorie
+                tags = order.product.tags.all()
+                if not ( sub_categorie in suggestes_sub_categories) :
+                    suggestes_sub_categories.append(order.product.sub_categorie)
+                for tag in tags :
+                    if not ( tag  in suggested_tags) and len(suggested_tags) :
+                        suggested_tags.append(tag.pk)
+            for product in favorites :
+                purchasted_products.append(product.pk)
+                if not (product.sub_categorie in suggestes_sub_categories):
+                    suggestes_sub_categories.append(product.sub_categorie)
+                for tag in product.tags.all():
+                    if not ( tag  in suggested_tags) and len(suggested_tags) :
+                        suggested_tags.append(tag.pk)
+            print(suggestes_sub_categories)
+            print(suggested_tags)
+            suggested_products1 = Product.objects.filter(sub_categorie__in = suggestes_sub_categories).exclude(pk__in = purchasted_products).order_by('?')[:15]
+            suggested_products2 = Product.objects.filter(tags__in = suggested_tags).exclude(pk__in = purchasted_products).order_by('?')[:15]
+        return list(chain(suggested_products1 , suggested_products2))
 
+class SimillarProducts(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    pagination_class = CustomPagination
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        product = Product.objects.get(pk=pk)
+        simillar_products1 = Product.objects.filter(sub_categorie = product.sub_categorie).exclude(pk = product.pk).order_by('?')
+        simillar_products2 = Product.objects.filter(tags__in = product.tags.all()).exclude(pk = product.pk).order_by('?')
+        return list(chain(simillar_products1 , simillar_products2))[:9]
+    

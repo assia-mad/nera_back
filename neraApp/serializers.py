@@ -171,47 +171,36 @@ class ProductSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField ( child = serializers.FileField(max_length = 1000000, allow_empty_file =True, use_url = False) , write_only = True )
     tags = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
     update_tags = serializers.ListField(
-        child=serializers.CharField(max_length=100), write_only=True , required = False)
+    child = serializers.CharField(max_length=100), write_only=True , required = False)
      
     class Meta:
        model = Product
-       fields = ['id','owner','code','name','regular_price','disc_price','disc_per','sub_categorie','type','available_colors','available_sizes','gender','created_at','images','uploaded_images','tags','update_tags']
+       fields = ['id','owner','code','name','description','regular_price','disc_price','disc_per','type','categorie','sub_categorie','available_colors','available_sizes','gender','created_at','images','uploaded_images','tags','update_tags']
 
     def create(self, validated_data):
         uploaded_data = validated_data.pop('uploaded_images')
         tag_names = validated_data.pop('update_tags')
+        type = validated_data.get('type')
+        sub_categorie = validated_data.get('sub_categorie')
         tags = []
         new_product = super().create(validated_data)
         for name in tag_names:
             tag, created = Tag.objects.get_or_create(name=name)
             tags.append(tag)
         new_product.tags.set(tags)
-        print(new_product.name)
         regular_price = new_product.regular_price
         percentage = decimal.Decimal(new_product.disc_per / 100)
         new_product.disc_price = regular_price - (regular_price * percentage)
-        print(new_product.disc_price)
-        new_product.save()
         for uploaded_item in uploaded_data:
             new_product_image = ProductImage.objects.create(product = new_product, image = uploaded_item)
+        serial_num = Product.objects.filter(type = type, sub_categorie = sub_categorie).count()
+        serial_num += 1
+        new_product.code = type.name[0:2]+'_'+sub_categorie.name[0:2]+'_'+serial_num
         new_product.save()
         return new_product       
     
     def update(self, instance, validated_data):
-        percentage = validated_data.get('disc_per') 
-        print(percentage)
-        regular_price = validated_data.get('regular_price')
-        print(regular_price)
-        discount_prix = regular_price - (regular_price * percentage)
-        instance.disc_price = discount_prix
-        instance.name = validated_data.get('name', instance.name)
-        instance.code = validated_data.get('code', instance.code)
-        instance.regular_price = validated_data.get('regular_price', instance.regular_price)
-        instance.disc_per = validated_data.get('disc_per', instance.disc_per)
-        instance.type = validated_data.get('type', instance.type)
-        instance.name = validated_data.get('name', instance.name)
-        instance.sub_categorie = validated_data.get('sub_categorie',instance.sub_categorie)
-        instance.gender = validated_data.get('gender',instance.gender) 
+        new_product = super().update(instance, validated_data) 
         available_colors= validated_data.pop('available_colors')
         for color in available_colors :
             instance.available_colors.add(color)
@@ -231,7 +220,7 @@ class ProductSerializer(serializers.ModelSerializer):
             pass
         instance.tags.set(tags)
         instance.save() 
-        return instance
+        return instance 
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta :
@@ -299,6 +288,21 @@ class PaymentConfirmSerializer(serializers.ModelSerializer):
             panier.state = 'payé'
             panier.save()
         return super().update(instance, validated_data)
+
+class DiscountSerializer(serializers.ModelSerializer):
+    products= serializers.PrimaryKeyRelatedField(
+        queryset= Product.objects.all(),
+        many=True,
+        required= False
+    )
+    subCategories = serializers.PrimaryKeyRelatedField(
+        queryset= SubCategorie.objects.all(),
+        many=True,
+        required= False
+    )
+    class Meta:
+        model = Discount
+        fields = ['id','percentage','products','subCategories','date_debut','date_limit']
  
 class CodePromoSerializer(serializers.ModelSerializer):
     products= serializers.PrimaryKeyRelatedField(
@@ -318,13 +322,14 @@ class CodePromoSerializer(serializers.ModelSerializer):
     )
     class Meta :
         model = CodePromo
-        fields = ['id','code','influencer','percentage','type','products','subCategories','users','date_limit','used_one_time']
+        fields = ['id','code','influencer','percentage','type','products','subCategories','users','date_debut','date_limit','used_one_time']
 
     def update(self, instance, validated_data):
         instance.code = validated_data.get('code')
         instance.percentage = validated_data.get('percentage')
         instance.type = validated_data.get('type')
         instance.date_limit = validated_data.get('date_limit')
+        instance.date_debut = validated_data.get('date_debut')
         subCategories = validated_data.pop('subCategories')
         for sub_cat in subCategories :
             instance.subCategories.add(sub_cat)

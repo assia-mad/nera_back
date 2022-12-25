@@ -37,6 +37,7 @@ router.register('panier', PanierView, basename='panier')
 router.register('favorites', FavoriteListView, basename='favorites')
 router.register('manage_users',ManageUsersView , basename= 'manage_users')
 router.register('code_promo',CodePromoView , basename='code_promo')
+router.register('discounts',DiscountView , basename='discounts')
 router.register('wishlists',WishlistView , basename='wishlists')
 router.register('followed_wish',FollowedWishlistView , basename='followed_wishlists')
 router.register('follower_wish',FollowerWishlistView , basename='follower_wishlists')
@@ -75,12 +76,15 @@ urlpatterns = [
     path('stats_purchasted_colors/', ColorOrdersStat.as_view() , name='orders_colors'),
     path('stats_gender/', GenderStatisticsView.as_view() , name='gender_stats'),
     path('stats_wilayas/', WilayasOrderStat.as_view() , name='wilayas_stats'),
-    path('stats_companies/',CompaniesStatisticsView.as_view(), name = 'companies_stats'),
+    path('stats_companies_desk/',CompaniesDeskStatisticsView.as_view(), name = 'companiesDesk_stats'),
+    path('stats_companies_home/',CompanieshomeStatisticsView.as_view(), name = 'companieshome_stats'),
     path('stats_age/', AgeStat.as_view() , name='age_stats'),
     path('stats_purchasted_products/', ProductPurchastedView.as_view() , name='products_stats'),
     path('stats_visitors/', VisitorStatsView.as_view() , name='visitors_stats'),
     path('stats_codepromo/', CodePromoStats.as_view() , name='code_promo_stats'),
     path('stats_codeInfluencer/', CodeInfluencerStats.as_view() , name='code_influencer_stats'),
+    path('suggestions/', SuggestedProductsView.as_view() , name = 'suggestions'),
+    path('simillar_products/<int:pk>/', SimillarProducts.as_view(), name = 'simillar_products'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

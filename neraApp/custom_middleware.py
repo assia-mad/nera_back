@@ -1,5 +1,5 @@
 from .models import Visitor
-from datetime import datetime 
+import datetime
 
 def visit_middleware(get_response):
     # One-time configuration and initialization.
@@ -14,13 +14,13 @@ def visit_middleware(get_response):
             else:
                 ip = request.META.get('REMOTE_ADDR')
             return ip
-        ip = get_client_ip(request)
-        Visitor.objects.get_or_create(ip_add = ip)
-        visitor = Visitor.objects.get(ip_add = ip)
-        visitor.last_visit = datetime.now()
-        visitor.save()
+        if (request.path == '/nera/products/') and (request.method == 'GET'):
+            ip = get_client_ip(request)
+            Visitor.objects.get_or_create(ip_add = ip ,last_visit = datetime.datetime.now().strftime("%Y-%m-%d"))
+            # visitor = Visitor.objects.get(ip_add = ip)
+            # visitor.last_visit = datetime.date.today
+            # visitor.save()
         
-
         response = get_response(request)
 
         # Code to be executed for each request/response after
