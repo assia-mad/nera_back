@@ -54,6 +54,7 @@ router.register('settings', SettingsView , basename = 'easter_eggs_settings')
 router.register('news',NewsView , basename='news')
 router.register('gifts',GiftView , basename='gifts')
 router.register('visitors',VisitorView , basename='visitors')
+router.register('suggestions', SuggestedProductsView , basename = 'suggestions')
 
 
 urlpatterns = [
@@ -83,7 +84,6 @@ urlpatterns = [
     path('stats_visitors/', VisitorStatsView.as_view() , name='visitors_stats'),
     path('stats_codepromo/', CodePromoStats.as_view() , name='code_promo_stats'),
     path('stats_codeInfluencer/', CodeInfluencerStats.as_view() , name='code_influencer_stats'),
-    path('suggestions/', SuggestedProductsView.as_view() , name = 'suggestions'),
     path('simillar_products/<int:pk>/', SimillarProducts.as_view(), name = 'simillar_products'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

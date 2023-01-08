@@ -19,7 +19,6 @@ order_states = [
 codePromo_choices = [ 
     ('normal','normal'),
     ('influencer','influencer'),
-    ('réduction','réduction'),
 ]
 gender_choices = [
     ('féminin','féminin'),
@@ -52,22 +51,22 @@ class User(AbstractUser):
     address = models.CharField(max_length=50 , blank=True , null= True)
     tel = models.CharField(max_length=10 , validators=[num_only],blank=True)
     image = models.ImageField(upload_to='profile_images/', blank = True , null = True , verbose_name='user_img')
-    role =  models.CharField(max_length=30 , choices=role_choices , default='Client')
-    gender =  models.CharField(max_length=30 , choices=gender_choices, blank= True , null= True )
+    role =  models.CharField(max_length=10 , choices=role_choices , default='Client')
+    gender =  models.CharField(max_length=8 , choices=gender_choices, blank= True , null= True )
     age = models.PositiveIntegerField(blank=True , null= True)
-    language = models.CharField(max_length=10,choices=language_choices,default='anglais')
+    language = models.CharField(max_length=8,choices=language_choices,default='anglais')
     dark_mode = models.BooleanField(default=False)
     qte_purchased = models.PositiveIntegerField(default=0)
 
 class ProductType( models.Model):
-    name = models.CharField(max_length=30 , blank= False , null = False)
+    name = models.CharField(max_length=25 , blank= False , null = False)
     image = models.ImageField(upload_to='type_images/', blank = True , null = True , verbose_name='type_img')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
 
 class Categorie(models.Model ):
-    name = models.CharField(max_length=30 , blank= False , null = False)
+    name = models.CharField(max_length=25 , blank= False , null = False)
     types = models.ManyToManyField(ProductType , related_name='categories')
     image = models.ImageField(upload_to='categorie_images/', blank = True , null = True , verbose_name='categorie_img')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -75,7 +74,7 @@ class Categorie(models.Model ):
         return self.name
 
 class SubCategorie(models.Model):
-    name = models.CharField(max_length=30 , blank= False , null = False)
+    name = models.CharField(max_length=25 , blank= False , null = False)
     image = models.ImageField(upload_to='sub_categorie_images/', blank = True , null = True , verbose_name='sub_categorie_img')
     categories = models.ManyToManyField(Categorie , related_name='sub_categorie')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -95,16 +94,16 @@ class Size(models.Model):
         return self.code
 
 class Tag(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=25)
     def __str__(self):
         return self.name
 #produit
 class Product(models.Model):
     owner = models.ForeignKey(User , related_name='product_owner', on_delete=models.CASCADE)
     code = models.CharField(max_length=30, null = True ,blank=True)
-    name = models.CharField(max_length=50 , blank= False, null= False)
+    name = models.CharField(max_length=25 , blank= False, null= False)
     description = models.TextField(null=True,blank=True)
-    regular_price = models.DecimalField(decimal_places =2,max_digits =10 )
+    regular_price = models.DecimalField(decimal_places=2,max_digits =10)
     disc_price = models.DecimalField(decimal_places =2,max_digits = 10 , blank=True , null= True ) #  price after a discount
     disc_per= models.DecimalField(decimal_places =2,max_digits = 4,  default= 0.00)
     type = models.ForeignKey(ProductType , related_name='product_type', on_delete=models.CASCADE)
@@ -113,7 +112,7 @@ class Product(models.Model):
     available_colors = models.ManyToManyField(Color , related_name='product_colours')
     available_sizes = models.ManyToManyField(Size , related_name='product_sizes')
     tags = models.ManyToManyField(Tag , related_name='Product')
-    gender = models.CharField(max_length=50, choices=product_gender_choices, default=product_gender_choices[2])
+    gender = models.CharField(max_length=8, choices=product_gender_choices, default=product_gender_choices[2])
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
@@ -125,24 +124,24 @@ class ProductImage(models.Model):
         return self.image.url
         
 class Company(models.Model):
-    name = models.CharField(max_length=50 , blank= False , null= False)
+    name = models.CharField(max_length=25 , blank= False , null= False)
     image = models.ImageField(upload_to = 'company_images/',blank = True , null = True , verbose_name='company_images')
     def __str__(self):
         return self.name
 
 class Wilaya(models.Model):
-    name = models.CharField(max_length= 30 , blank= False , null= False)
+    name = models.CharField(max_length= 25 , blank= False , null= False)
     def __str__(self):
         return self.name 
 
 class Commune(models.Model):
-    name = models.CharField(max_length= 30 , blank= False , null= False)
+    name = models.CharField(max_length= 25 , blank= False , null= False)
     wilaya = models.ForeignKey(Wilaya , related_name = 'Commune',on_delete = models.CASCADE)
     def __str__(self):
         return self.name
 
 class StopDesk(models.Model):
-    name = models.CharField(max_length= 30 , blank= False , null= False)
+    name = models.CharField(max_length= 25 , blank= False , null= False)
     delivery_price = models.PositiveIntegerField(blank= False , null= False)
     company = models.ForeignKey(Company , related_name = 'stop_desks', on_delete = models.CASCADE)
     wilaya = models.ForeignKey(Wilaya , related_name = 'stop_desks',on_delete = models.CASCADE)
@@ -158,36 +157,37 @@ class CommuneCompany(models.Model):
     
 class Panier(models.Model):
     owner = models.ForeignKey(User, related_name='panier',on_delete= models.CASCADE)
-    detailed_place = models.CharField(max_length=50 , blank= False , null= False)
+    detailed_place = models.CharField(max_length=35 , blank= False , null= False)
     wilaya = models.ForeignKey(Wilaya, related_name ='panier', on_delete = models.CASCADE)
     commune = models.ForeignKey(Commune, related_name = 'panier', on_delete = models.CASCADE)
     postal_code = models.PositiveIntegerField()
-    advanced_payment = models.CharField(max_length=30 , choices= payment_choices, null = True , blank = True)
+    advanced_payment = models.CharField(max_length=9 , choices= payment_choices, null = True , blank = True)
     desk_delivery = models.ForeignKey(StopDesk, related_name = 'panier' , on_delete = models.CASCADE , null = True)
     commune_delivery = models.ForeignKey(CommuneCompany, related_name = 'panier' , on_delete = models.CASCADE , null = True)
-    state = models.CharField(max_length=50 , choices= panier_state , default= 'non payé')
+    state = models.CharField(max_length=12 , choices= panier_state , default= 'non payé')
     tel = models.CharField(max_length=10 , validators=[num_only], blank= True , null= True)
     total_price = models.DecimalField(decimal_places=2,max_digits=10, default=00.0 )
     created_at = models.DateTimeField(auto_now_add=True)
 
 class PaymentConfirm(models.Model):
-    transaction_code = models.CharField(max_length=50 , blank=True , null= True)
+    transaction_code = models.CharField(max_length=20 , blank=True , null= True)
     image = models.ImageField(upload_to='payment_confirm/', blank = True , null = True , verbose_name='payment_confirm')
     panier = models.OneToOneField(Panier , related_name='payment_confirm', on_delete= models.CASCADE)
     accept_payment = models.BooleanField(default=False)
 
 class Discount(models.Model):
     percentage = models.DecimalField(decimal_places =2,max_digits = 4)
-    products = models.ManyToManyField(Product , related_name='code_promo_products')
+    products = models.ManyToManyField(Product , related_name='discounts')
+    categories = models.ManyToManyField(Categorie , related_name='discounts')
     subCategories = models.ManyToManyField(SubCategorie , related_name='code_promo_sub_categories')
     date_debut = models.DateField(blank=True , null=True)#change it later tooo not null
     date_limit =  models.DateField(blank=False , null=False)
 
 class CodePromo(Discount):
-    code = models.CharField(max_length=20 ,unique= True, blank= False , null= False)
+    code = models.CharField(max_length=15 ,unique= True, blank= False , null= False)
     influencer = models.ForeignKey(User , related_name='code_promo_influencer',on_delete= models.CASCADE, null= True)
     used_one_time = models.BooleanField(default=True) #if code promo can be used once 
-    type =  models.CharField(max_length=20 , choices= codePromo_choices , default= codePromo_choices[0])
+    type =  models.CharField(max_length=10 , choices= codePromo_choices , default= 'normal')
     users = models.ManyToManyField(User,related_name='code_promo_users')
     def __str__(self):
         return self.code
@@ -200,7 +200,7 @@ class Order(models.Model):
     owner = models.ForeignKey(User , related_name='orders', on_delete= models.CASCADE , null=True)
     panier = models.ForeignKey(Panier , related_name='orders',on_delete= models.CASCADE , null= True)
     product = models.ForeignKey(Product , related_name='product_ordered',on_delete=models.CASCADE)
-    state = models.CharField(max_length=50 , choices= order_states , default=order_states[0])
+    state = models.CharField(max_length=11 , choices= order_states , default='non_traitée')
     price_to_pay = models.DecimalField(decimal_places =2,max_digits =10)
     color = models.CharField(max_length=7 , blank=False , null = False)
     size = models.CharField(max_length=10 , blank= False , null = False)
@@ -231,8 +231,8 @@ class Settings(models.Model):
     activate_gifts = models.BooleanField(default= True) #activate or not gifts system
     qte_to_win = models.PositiveIntegerField(default= 5) # the quantity that allow win a gift
     poste_delivery_price = models.PositiveIntegerField(default = 0) #the price of delivery by poste
-    ccp_code = models.CharField(null = True , blank = True,max_length = 15)
-    ccp_cle = models.CharField(null = True , blank = True,max_length = 4) 
+    ccp_code = models.CharField(null = True , blank = True,max_length = 10)
+    ccp_cle = models.CharField(null = True , blank = True,max_length = 2) 
 
 class News(models.Model):
     image = models.ImageField(upload_to='news_images/', blank = True , null = True , verbose_name='news_image')
@@ -240,4 +240,9 @@ class News(models.Model):
 class Visitor(models.Model):
     ip_add = models. GenericIPAddressField()
     last_visit = models.DateField(default=datetime.date.today)
+
+class Signal(models.Model):
+    user = models.ForeignKey(User , related_name='signal',on_delete=models.CASCADE)
+    description = models.TextField()
+    image = models.ImageField(upload_to = 'signals_images/', blank = True, null= True)
     

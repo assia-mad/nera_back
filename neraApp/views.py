@@ -106,24 +106,11 @@ class ProductView(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
-    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filter_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','categorie','sub_categorie','available_colors','available_sizes','tags']
     filterset_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','categorie','sub_categorie','available_colors','available_sizes','tags']
     search_fields = ['owner__id','code','name','regular_price','disc_price','disc_per','gender','type__id','categorie__id','sub_categorie__id','available_colors__id','available_sizes__id','tags__id']
     ordering_fields = ['owner','code','name','regular_price','disc_price','disc_per','gender','type','categorie','sub_categorie','available_colors','available_sizes','tags']
-    def get_object(self):
-        product = super().get_object()
-        user = self.request.user
-        cached_data = cache.get(user.pk)
-        if cached_data is None:
-            cached_data = [product.sub_categorie]
-        else :
-            if not (product.sub_categorie in cached_data):
-                cached_data.append(product.sub_categorie)
-        cache.set(user.pk , cached_data , 3600*60)
-        print(cache.get(user.pk))
-        return product
     
 class OrderView(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -135,6 +122,10 @@ class OrderView(viewsets.ModelViewSet):
     filterset_fields = ['owner','panier','product','color','size','state','wishlist','qte','code_promo','created_at']
     search_fields = ['owner__id','panier__id','product__id','color','size','state','wishlist__id','qte','code_promo','created_at']
     ordering_fields = ['owner','panier','product','color','size','state','wishlist','qte','code_promo','created_at']
+    def get_queryset(self):
+        if self.request.query_params.get('filter_null', "false") == "true":
+            return Order.objects.filter( panier__isnull = True , wishlist__isnull = True)
+        return Order.objects.all()
 
 class FuturPersonnelOrders(viewsets.ModelViewSet):#for every user
     serializer_class = OrderSerializer
@@ -176,10 +167,10 @@ class DiscountView(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['percentage','products','subCategories','date_debut','date_limit']
-    filterset_fields = ['percentage','products','subCategories','date_debut','date_limit']
-    search_fields = ['percentage','products','subCategories','date_debut','date_limit']
-    ordering_fields = ['percentage','products','subCategories','date_debut','date_limit']
+    filter_fields = ['percentage','products','subCategories','categories','date_debut','date_limit']
+    filterset_fields = ['percentage','products','subCategories','categories','date_debut','date_limit']
+    search_fields = ['percentage','products__id','subCategories__id','categories__id','date_debut','date_limit']
+    ordering_fields = ['percentage','products','subCategories','categories','date_debut','date_limit']
 
 class CodePromoView(viewsets.ModelViewSet):
     current = datetime.now()
@@ -188,10 +179,10 @@ class CodePromoView(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filter_fields = ['code','percentage','type','products','subCategories','users','date_limit']
-    filterset_fields = ['code','percentage','type','products','subCategories','users','date_limit']
-    search_fields = ['code','percentage','type','products__id','subCategories__id','users__id','date_limit']
-    ordering_fields = ['code','percentage','type','products','subCategories','users','date_limit']
+    filter_fields = ['code','percentage','type','products','subCategories','categories','users','date_limit']
+    filterset_fields = ['code','percentage','type','products','subCategories','categories','users','date_limit']
+    search_fields = ['code','percentage','type','products__id','subCategories__id','categories__id','users__id','date_limit']
+    ordering_fields = ['code','percentage','type','products','subCategories','categories','users','date_limit']
 
 class WishlistView(viewsets.ModelViewSet):
     queryset = Wishlist.objects.all()
@@ -437,23 +428,68 @@ class GenderStatisticsView(APIView):
 
 class AgeStat(APIView): 
     def get(self , request , format = None):
-        ages_last_week = dict()
-        ages_last_month = dict()
-        ages_last_6_month = dict()
-        ages_last_year = dict()
         some_day_last_week = timezone.now().date() - timedelta(days=7)
         some_day_last_month = timezone.now().date() - timedelta(days=30)
         some_day_last_6_month = timezone.now().date() - timedelta(days=180)
         some_day_last_year = timezone.now().date() - timedelta(days=365)
-        ages_last_week = User.objects.filter(date_joined__gt = some_day_last_week , age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_week).count())).order_by('-percentage')
-        ages_last_month = User.objects.filter(date_joined__gt = some_day_last_month ,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_month)).count()).order_by('-percentage')
-        ages_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
-        ages_last_year = User.objects.filter(date_joined__gt = some_day_last_year,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_year)).count()).order_by('-percentage')
+        ages_last_week_15_17 = User.objects.filter(date_joined__gt = some_day_last_week , age__gte = 15 , age__lte = 17).count()
+        ages_last_week_18_23 = User.objects.filter(date_joined__gt = some_day_last_week , age__gt = 17 , age__lte = 23).count()
+        ages_last_week_23_28 = User.objects.filter(date_joined__gt = some_day_last_week , age__gt = 23 , age__lte = 28).count()
+        ages_last_week_28_35 = User.objects.filter(date_joined__gt = some_day_last_week , age__gt = 28, age__lte = 35).count()
+        ages_last_week_35_40 = User.objects.filter(date_joined__gt = some_day_last_week , age__gt = 35 , age__lte = 40).count()
+        ages_last_week_40 = User.objects.filter(date_joined__gt = some_day_last_week , age__gt = 40).count()
+        ages_last_month_15_17 = User.objects.filter(date_joined__gt = some_day_last_month , age__gte = 15 , age__lte = 17).count()
+        ages_last_month_18_23  = User.objects.filter(date_joined__gt = some_day_last_month , age__gt = 17 , age__lte = 23).count()
+        ages_last_month_23_28 = User.objects.filter(date_joined__gt = some_day_last_month , age__gt = 23 , age__lte = 28).count()
+        ages_last_month_28_35 = User.objects.filter(date_joined__gt = some_day_last_month , age__gt = 28, age__lte = 35).count()
+        ages_last_month_35_40 = User.objects.filter(date_joined__gt = some_day_last_month , age__gt = 35 , age__lte = 40).count()
+        ages_last_month_40= User.objects.filter(date_joined__gt = some_day_last_month , age__gt = 40).count()
+        # ages_last_6_month = User.objects.filter(date_joined__gt = some_day_last_6_month,age__isnull = False).values('age').annotate(percentage =( Count('id')* 100)/(User.objects.filter(date_joined__gt = some_day_last_6_month)).count()).order_by('-percentage')
+        ages_last_6_month_15_17 = User.objects.filter(date_joined__gt = some_day_last_6_month, age__gte = 15 , age__lte = 17).count()
+        ages_last_6_month_18_23  = User.objects.filter(date_joined__gt = some_day_last_6_month, age__gt = 17 , age__lte = 23).count()
+        ages_last_6_month_23_28 = User.objects.filter(date_joined__gt = some_day_last_6_month, age__gt = 23 , age__lte = 28).count()
+        ages_last_6_month_28_35 = User.objects.filter(date_joined__gt = some_day_last_6_month, age__gt = 28, age__lte = 35).count()
+        ages_last_6_month_35_40 = User.objects.filter(date_joined__gt = some_day_last_6_month, age__gt = 35 , age__lte = 40).count()
+        ages_last_6_month_40= User.objects.filter(date_joined__gt = some_day_last_6_month, age__gt = 40).count()
+        ages_last_year_15_17 = User.objects.filter(date_joined__gt = some_day_last_year, age__gte = 15 , age__lte = 17).count()
+        ages_last_year_18_23  = User.objects.filter(date_joined__gt = some_day_last_year, age__gt = 17 , age__lte = 23).count()
+        ages_last_year_23_28 = User.objects.filter(date_joined__gt = some_day_last_year, age__gt = 23 , age__lte = 28).count()
+        ages_last_year_28_35 = User.objects.filter(date_joined__gt = some_day_last_year, age__gt = 28, age__lte = 35).count()
+        ages_last_year_35_40 = User.objects.filter(date_joined__gt = some_day_last_year, age__gt = 35 , age__lte = 40).count()
+        ages_last_year_40= User.objects.filter(date_joined__gt = some_day_last_year, age__gt = 40).count()
         data = {
-            'ages_last_week':ages_last_week,
-            'ages_last_month':ages_last_month,
-            'ages_last_6_month':ages_last_6_month,
-            'ages_last_year':ages_last_year,
+            'ages_last_week':{
+                "15_17":ages_last_week_15_17,
+                "18_23":ages_last_week_18_23,
+                "23_28":ages_last_week_23_28,
+                "28_35":ages_last_week_28_35,
+                "35_40":ages_last_week_35_40,
+                "plus_40":ages_last_week_40,
+                },
+             'ages_last_month':{
+                "15_17":ages_last_month_15_17,
+                "18_23":ages_last_month_18_23,
+                "23_28":ages_last_month_23_28,
+                "28_35":ages_last_month_28_35,
+                "35_40":ages_last_month_35_40,
+                "plus_40":ages_last_month_40,
+                },
+            'ages_last_6_month':{
+                "15_17":ages_last_6_month_15_17,
+                "18_23":ages_last_6_month_18_23,
+                "23_28":ages_last_6_month_23_28,
+                "28_35":ages_last_6_month_28_35,
+                "35_40":ages_last_6_month_35_40,
+                "plus_40":ages_last_6_month_40,
+                },
+            'ages_last_year':{
+                "15_17":ages_last_year_15_17,
+                "18_23":ages_last_year_18_23,
+                "23_28":ages_last_year_23_28,
+                "28_35":ages_last_year_28_35,
+                "35_40":ages_last_year_35_40,
+                "plus_40":ages_last_year_40,
+                },
         }
         
         return Response(data)
@@ -631,44 +667,65 @@ class CodeInfluencerStats(APIView):
         }
         return Response(data)
 
-class SuggestedProductsView(generics.ListAPIView):
+class SuggestedProductsView(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
     def get_queryset(self):
-        orders_list = Order.objects.order_by('created_at').filter(owner = self.request.user)[:15]
-        favorites = FavoriteList.objects.get(owner = self.request.user).products
-        visited_sub_categories = cache.get(self.request.user.pk)
-        if all(v is not None for v in [orders_list, favorites, visited_sub_categories]):
+        user = self.request.user
+        print("the user is ", user.pk)
+        print('in the cache', cache.get(user.pk))
+        orders_list = Order.objects.order_by('created_at').filter(owner = user).all()[:20]
+        favorites = FavoriteList.objects.get(owner = user).products.all()
+        visited_sub_categories = cache.get(user.pk)
+        print("the visited",visited_sub_categories)
+        print("the keys",cache.has_key(user.pk))
+        print("the fav",favorites)
+        print("orders",orders_list)
+        if all(v is None for v in [orders_list, favorites, visited_sub_categories]):
             return Product.objects.all().order_by('?')
         else :
             suggestes_sub_categories = [] #suggest based on them
             purchasted_products = [] #to eleminate them from suggestions
             suggested_tags = [] # suggest products by tags too
-            for sub_categorie in visited_sub_categories :
-                if not (sub_categorie) in suggestes_sub_categories :
-                    suggestes_sub_categories.append(sub_categorie)
-            for order in orders_list:
-                purchasted_products.append(order.product.pk)
-                sub_categorie = order.product.sub_categorie
-                tags = order.product.tags.all()
-                if not ( sub_categorie in suggestes_sub_categories) :
-                    suggestes_sub_categories.append(order.product.sub_categorie)
-                for tag in tags :
-                    if not ( tag  in suggested_tags) and len(suggested_tags) :
-                        suggested_tags.append(tag.pk)
-            for product in favorites :
-                purchasted_products.append(product.pk)
-                if not (product.sub_categorie in suggestes_sub_categories):
-                    suggestes_sub_categories.append(product.sub_categorie)
-                for tag in product.tags.all():
-                    if not ( tag  in suggested_tags) and len(suggested_tags) :
-                        suggested_tags.append(tag.pk)
-            print(suggestes_sub_categories)
-            print(suggested_tags)
-            suggested_products1 = Product.objects.filter(sub_categorie__in = suggestes_sub_categories).exclude(pk__in = purchasted_products).order_by('?')[:15]
-            suggested_products2 = Product.objects.filter(tags__in = suggested_tags).exclude(pk__in = purchasted_products).order_by('?')[:15]
-        return list(chain(suggested_products1 , suggested_products2))
+            if visited_sub_categories is not None :
+                    suggestes_sub_categories.extend(visited_sub_categories)
+            if orders_list is not None :
+                for order in orders_list:
+                    purchasted_products.append(order.product.pk)
+                    sub_categorie = order.product.sub_categorie
+                    tags = order.product.tags.all()
+                    if not ( sub_categorie in suggestes_sub_categories) :
+                        suggestes_sub_categories.append(order.product.sub_categorie)
+                    for tag in tags :
+                        if not ( tag  in suggested_tags) and len(suggested_tags)<20 :
+                            suggested_tags.append(tag)
+            if favorites is not None :
+                for product in favorites.all() :
+                    purchasted_products.append(product.pk)
+                    if not (product.sub_categorie in suggestes_sub_categories):
+                        suggestes_sub_categories.append(product.sub_categorie)
+                    for tag in product.tags.all():
+                        if not ( tag  in suggested_tags) and len(suggested_tags)<20 :
+                            suggested_tags.append(tag)
+            print("the suggested sub categories",suggestes_sub_categories)
+            print("the suggested tags",suggested_tags)
+            suggested_products1 = Product.objects.filter(sub_categorie__in = suggestes_sub_categories,tags__in = suggested_tags).exclude(pk__in = purchasted_products).order_by('?')[:20]
+            random_products = Product.objects.exclude(pk__in = suggested_products1).order_by('?')[:10]
+        return (suggested_products1 | random_products).distinct()
+    def get_object(self):
+        product = super().get_object()
+        user = self.request.user
+        cached_data = cache.get(user.pk)
+        if cached_data is None:
+            cached_data = [product.sub_categorie]
+        else :
+            if not (product.sub_categorie in cached_data):
+                cached_data.append(product.sub_categorie)
+        cache.set(user.pk , cached_data , 3600*60)
+        print("we caached",cache.get(user.pk))
+        print("the keys",cache.has_key(user.pk))
+        return product
 
 class SimillarProducts(generics.ListAPIView):
     serializer_class = ProductSerializer
@@ -679,4 +736,15 @@ class SimillarProducts(generics.ListAPIView):
         simillar_products1 = Product.objects.filter(sub_categorie = product.sub_categorie).exclude(pk = product.pk).order_by('?')
         simillar_products2 = Product.objects.filter(tags__in = product.tags.all()).exclude(pk = product.pk).order_by('?')
         return list(chain(simillar_products1 , simillar_products2))[:9]
+
+class SignalView(viewsets.ModelViewSet):
+    queryset = Signal.objects.all()
+    serializer_class = SignalSerializer
+    pagination_class = CustomPagination
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_fields = ['id','user','description','image']
+    filterset_fields = ['id','user','description','image']
+    search_fields = ['id','user__id','description','image']
+    ordering_fields =['id','user','description','image']
     

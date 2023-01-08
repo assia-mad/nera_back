@@ -300,9 +300,14 @@ class DiscountSerializer(serializers.ModelSerializer):
         many=True,
         required= False
     )
+    categories  = serializers.PrimaryKeyRelatedField(
+        queryset = Categorie.objects.all(),
+        many = True,
+        required = False
+    )
     class Meta:
         model = Discount
-        fields = ['id','percentage','products','subCategories','date_debut','date_limit']
+        fields = ['id','percentage','products','subCategories','categories','date_debut','date_limit']
  
 class CodePromoSerializer(serializers.ModelSerializer):
     products= serializers.PrimaryKeyRelatedField(
@@ -315,6 +320,11 @@ class CodePromoSerializer(serializers.ModelSerializer):
         many=True,
         required= False
     )
+    categories  = serializers.PrimaryKeyRelatedField(
+        queryset = Categorie.objects.all(),
+        many = True,
+        required = False
+    )
     users = serializers.PrimaryKeyRelatedField(
         queryset= User.objects.all(),
         many=True,
@@ -322,7 +332,7 @@ class CodePromoSerializer(serializers.ModelSerializer):
     )
     class Meta :
         model = CodePromo
-        fields = ['id','code','influencer','percentage','type','products','subCategories','users','date_debut','date_limit','used_one_time']
+        fields = ['id','code','influencer','percentage','type','products','subCategories','categories','users','date_debut','date_limit','used_one_time']
 
     def update(self, instance, validated_data):
         instance.code = validated_data.get('code')
@@ -405,3 +415,8 @@ class VisitorsSerializer(serializers.ModelSerializer):
     class Meta :
         model = Visitor
         fields = ['id','ip_add','last_visit']
+
+class SignalSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Signal
+        fields = ['id','user','description','image']
