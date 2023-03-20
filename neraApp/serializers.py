@@ -378,10 +378,11 @@ class RequestSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         is_accepted = validated_data.get('is_accepted')
         wishlist = validated_data.get('wishlist')
+        wishlist_obj = Wishlist.objects.get(pk = wishlist)
         sender = validated_data.get('sender')
         if is_accepted == True :
-            wishlist.users.add(sender)
-            wishlist.save()
+            wishlist_obj.users.add(sender)
+            wishlist_obj.save()
         return super().update(instance, validated_data)
 
 class EasterEggSerializer(serializers.ModelSerializer):
