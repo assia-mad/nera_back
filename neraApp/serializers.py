@@ -381,6 +381,7 @@ class RequestSerializer(serializers.ModelSerializer):
         sender = validated_data.get('sender')
         if is_accepted == True :
             wishlist.users.add(sender)
+            wishlist.save()
         return super().update(instance, validated_data)
 
 class EasterEggSerializer(serializers.ModelSerializer):
