@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import imp
 from pathlib import Path
 import os
-from firebase_admin import initialize_app
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,7 +51,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
-    'fcm_django',
     'hitcount',
     'neraApp',
 ]
@@ -74,8 +72,8 @@ OLD_PASSWORD_FIELD_ENABLED = True,
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'neradzshop@gmail.com'
-EMAIL_HOST_PASSWORD = 'nzxhzgwtarcetmkh'
+EMAIL_HOST_USER = "aldys06e@gmail.com"
+EMAIL_HOST_PASSWORD = "yjrdrtdpvrqgfgsv"
 EMAIL_PORT = 587
 
 REST_AUTH_REGISTER_SERIALIZERS = {
@@ -102,7 +100,7 @@ AUTHENTICATION_BACKENDS = [
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://:assiamdn2001@127.0.0.1:6379/1",
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -117,6 +115,9 @@ RQ_QUEUES = {
     'PORT': 6379,
     'DB': 0,
     }
+}
+SWAGGER_SETTINGS = {
+    'DEFAULT_GENERATOR_CLASS': 'drf_yasg.generators.OpenAPISchemaGenerator',
 }
 
 MIDDLEWARE = [
@@ -226,9 +227,6 @@ CORS_ORIGIN_WHITELIST = (
     'http://0.0.0.0:3000',
 )
 
-#fcm_settings
-FIREBASE_APP = initialize_app()
-# credentials = 'C:\Users\LENONVO\Desktop\nera_shop\nera-85aca-firebase-adminsdk-ldsf9-61d6c7cd8d.json'
 
 LOCALE_PATHS = (
     os.path.join(BASE_DIR,'neraApp/locale/'),
